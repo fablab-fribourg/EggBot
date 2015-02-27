@@ -15,9 +15,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SerialService {
 
-	public List<SerialPort> getListPorts() {
+	public List<SerialPortDefinition> getListPorts() {
 		return Arrays.stream(SerialPortList.getPortNames())
-				.map(n -> new SerialPort(n))
+				.map(n -> new SerialPortDefinition(n))
 				.collect(Collectors.toList());
 	}
+	
 }

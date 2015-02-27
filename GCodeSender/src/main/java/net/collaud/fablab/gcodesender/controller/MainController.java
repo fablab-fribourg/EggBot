@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
-import net.collaud.fablab.gcodesender.serial.SerialPort;
+import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -44,12 +44,12 @@ public class MainController implements Initializable {
 	private Button buttonPrint;
 
 	@FXML
-	private ComboBox<SerialPort> comboPort;
+	private ComboBox<SerialPortDefinition> comboPort;
 	
 	@FXML
 	private TextArea textLog;
 
-	private Optional<SerialPort> selectedPort = Optional.empty();
+	private Optional<SerialPortDefinition> selectedPort = Optional.empty();
 	private Optional<File> selectedFile = Optional.empty();
 
 	@FXML

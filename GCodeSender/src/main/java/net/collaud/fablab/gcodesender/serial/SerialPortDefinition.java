@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SerialPort {
+public class SerialPortDefinition {
 
 	private String name;
 	
