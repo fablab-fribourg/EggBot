@@ -5,6 +5,7 @@ import static javafx.application.Application.launch;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import net.collaud.fablab.gcodesender.controller.MainController;
 
 
 public class MainApp extends Application {
@@ -14,6 +15,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = (Parent) loader.load("/fxml/mainScene.fxml");
+		((MainController)loader.getController()).setStage(stage);
         
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/Styles.css");
