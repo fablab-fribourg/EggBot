@@ -6,13 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.Observable;
 import java.util.Optional;
 import java.util.Queue;
 import jssc.SerialPortException;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
+import net.collaud.fablab.gcodesender.tools.Observable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class GcodeService extends Observable {
+public class GcodeService extends Observable<NotifyMessage> {
 
 	@Autowired
 	private SerialService serialService;
@@ -31,7 +31,7 @@ public class GcodeService extends Observable {
 
 	private GcodeThread thread;
 
-	public void sendFile(File file, SerialPortDefinition port) {
+	public void print(File file, SerialPortDefinition port) {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
 		thread = new GcodeThread(file, port);
 		thread.start();
@@ -39,7 +39,7 @@ public class GcodeService extends Observable {
 
 	protected void notifyInfo(String msg) {
 		log.info("notify : " + msg);
-		notify(new NotifyMessage(NotifyMessage.Type.INFO, msg));
+		notifyObservers(new NotifyMessage(NotifyMessage.Type.INFO, msg));
 	}
 
 	protected void notifyError(String msg) {
@@ -49,15 +49,15 @@ public class GcodeService extends Observable {
 	protected void notifyError(String msg, Exception ex) {
 		log.error(msg, ex);
 		if (ex != null) {
-			notify(new NotifyMessage(NotifyMessage.Type.ERROR, msg + " : " + ex.getMessage()));
+			notifyObservers(new NotifyMessage(NotifyMessage.Type.ERROR, msg + " : " + ex.getMessage()));
 		} else {
-			notify(new NotifyMessage(NotifyMessage.Type.ERROR, msg));
+			notifyObservers(new NotifyMessage(NotifyMessage.Type.ERROR, msg));
 		}
 	}
 
-	protected void notify(NotifyMessage msg) {
-		setChanged();
-		notifyObservers(msg);
+
+	public void stopPrint() {
+		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
 	}
 
 	class GcodeThread extends Thread {

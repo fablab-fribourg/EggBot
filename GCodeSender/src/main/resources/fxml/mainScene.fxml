@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.web.*?>
 <?import javafx.scene.image.*?>
 <?import java.lang.*?>
@@ -20,24 +21,45 @@
                   <Image url="@images/fablab-logo.jpg" />
                </image>
             </ImageView>
-            <GridPane hgap="5.0" layoutX="2.0" layoutY="2.0" vgap="5.0">
-               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               </rowConstraints>
-               <children>
-                  <ComboBox fx:id="comboPort" prefWidth="150.0" promptText="Chose a port" />
-                  <Button mnemonicParsing="false" onAction="#reloadPorts" prefHeight="25.0" prefWidth="150.0" text="Reload ports list" GridPane.columnIndex="1" />
-                  <Button mnemonicParsing="false" onAction="#chooseGCodeFile" text="Choose gcode file" GridPane.rowIndex="1" />
-                  <Label fx:id="labelFile" minWidth="400.0" text="No file selected yet" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <Button fx:id="buttonPrint" mnemonicParsing="false" onAction="#print" text="Print that egg !" GridPane.rowIndex="2" />
-               </children>
-            </GridPane>
+            <TitledPane animated="false" collapsible="false" prefHeight="200.0" text="Port">
+              <content>
+                  <VBox spacing="5.0">
+                     <children>
+                        <HBox>
+                           <children>
+                              <ComboBox fx:id="comboPort" layoutY="14.0" prefWidth="150.0" promptText="Chose a port" />
+                              <Button mnemonicParsing="false" onAction="#reloadPorts" prefHeight="25.0" prefWidth="23.0" text="R" />
+                           </children>
+                        </HBox>
+                        <Button fx:id="buttonOpenPort" mnemonicParsing="false" onAction="#openPort" text="Open Port" />
+                        <Label fx:id="labelPortStatus" text="close" />
+                     </children>
+                  </VBox>
+              </content>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </TitledPane>
+            <TitledPane animated="false" collapsible="false" prefHeight="200.0" text="GCode">
+               <content>
+                  <VBox spacing="5.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#chooseGCodeFile" text="Choose gcode file" />
+                        <Label fx:id="labelFile" text="No file selected yet" wrapText="true" />
+                     </children>
+                  </VBox>
+               </content>
+            </TitledPane>
+            <TitledPane animated="false" collapsible="false" prefHeight="200.0" text="Print">
+               <content>
+                  <VBox spacing="5.0">
+                     <children>
+                        <Button fx:id="buttonPrintStart" mnemonicParsing="false" onAction="#print" prefHeight="25.0" prefWidth="133.0" text="Print that egg !" />
+                        <Button fx:id="buttonPrintStop" mnemonicParsing="false" onAction="#stopPrint" prefHeight="25.0" prefWidth="133.0" text="Ho shit Stop !" />
+                     </children>
+                  </VBox>
+               </content>
+            </TitledPane>
          </children>
       </HBox>
    </top>

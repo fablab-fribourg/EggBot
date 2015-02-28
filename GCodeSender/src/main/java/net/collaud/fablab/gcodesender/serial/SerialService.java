@@ -1,6 +1,5 @@
 package net.collaud.fablab.gcodesender.serial;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -13,6 +12,7 @@ import jssc.SerialPortException;
 import jssc.SerialPortList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.collaud.fablab.gcodesender.tools.Observable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,42 +21,51 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class SerialService {
-
+public class SerialService extends Observable<PortStatus> {
+	
 	private SerialPort openPort;
-
+	
 	@Getter
-	private final BlockingQueue<String> readingQueue = new LinkedBlockingQueue<String>();
-
+	private final BlockingQueue<String> readingQueue = new LinkedBlockingQueue<>();
+	
 	public List<SerialPortDefinition> getListPorts() {
 		return Arrays.stream(SerialPortList.getPortNames())
 				.map(n -> new SerialPortDefinition(n))
 				.collect(Collectors.toList());
 	}
-
-	synchronized public void openPort(SerialPortDefinition def) throws SerialPortException {
-		openPort = new SerialPort(def.getName());
-		openPort.openPort();
-		openPort.setParams(SerialPort.BAUDRATE_115200,
-				SerialPort.DATABITS_8,
-				SerialPort.STOPBITS_1,
-				SerialPort.PARITY_NONE);
-
-		openPort.addEventListener(new SerialPortReader());
+	
+	synchronized public void openPort(SerialPortDefinition def) {
+		notifyObservers(PortStatus.OPENNING);
+		try {
+			openPort = new SerialPort(def.getName());
+			openPort.openPort();
+			openPort.setParams(SerialPort.BAUDRATE_115200,
+					SerialPort.DATABITS_8,
+					SerialPort.STOPBITS_1,
+					SerialPort.PARITY_NONE);
+			
+			openPort.addEventListener(new SerialPortReader());
+		} catch (SerialPortException ex) {
+			log.error("Cannot open port", ex);
+			notifyObservers(PortStatus.ERROR);
+		}
+		notifyObservers(PortStatus.OPEN);
 	}
-
+	
 	synchronized public void write(String line) throws SerialPortException {
 		openPort.writeString(line + "\n");
 	}
-
+	
 	public void closePort() throws SerialPortException {
+		notifyObservers(PortStatus.CLOSING);
 		openPort.closePort();
+		notifyObservers(PortStatus.CLOSE);
 	}
-
+	
 	class SerialPortReader implements SerialPortEventListener {
-
+		
 		private StringBuilder buffer = new StringBuilder();
-
+		
 		@Override
 		synchronized public void serialEvent(SerialPortEvent event) {
 			if (event.isRXCHAR()) {
@@ -67,17 +76,17 @@ public class SerialService {
 						buffer.append(new String(buff));
 						checkForNewLine();
 					}
-
+					
 				} catch (SerialPortException ex) {
 					log.error("Error while reading", ex);
 				}
 			}
 		}
-
+		
 		public void checkForNewLine() {
 			boolean lineFound;
 			String buffStr = buffer.toString();
-
+			
 			int lastIndex = 0;
 			int index;
 			while ((index = buffStr.indexOf("\n", lastIndex)) > 0) {
