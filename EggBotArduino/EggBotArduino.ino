@@ -1,12 +1,5 @@
-
-
-
-
 /*
- * Original Code: Copyright 2011 by Eberhard Rensch <http://pleasantsoftware.com/developer/3d>
- *
- * Modified by Alexander Balasch 
- * Modified by Gaetan Collaud 
+ * Copyright 2011 by Eberhard Rensch <http://pleasantsoftware.com/developer/3d>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,59 +29,40 @@
 #include "StepperModel.h"
 
 
-#define TIMER_DELAY 256
+#define TIMER_DELAY 64
 
-#define VERSIONCODE "EggBot (from Spherebot 2.0)"
 /*
  * PINS
  */
 
-/*  ms1  |  ms2
- ----------------
-   L    |  L        ->  Full Step
-   H    |  L        ->  Half Step 
-   L    |  H        ->  Quarter Step
-   H    |  H        ->  Sixteenth Step
- */
+#define XAXIS_DIR_PIN 5
+#define XAXIS_STEP_PIN 2
+#define XAXIS_ENABLE_PIN 8
+#define XAXIS_ENDSTOP_PIN -1
 
-#define XAXIS_VMS1 HIGH
-#define XAXIS_VMS2 HIGH
-#define YAXIS_VMS1 HIGH
-#define YAXIS_VMS2 HIGH
+#define YAXIS_DIR_PIN 6
+#define YAXIS_STEP_PIN 3
+#define YAXIS_ENABLE_PIN 8
+#define YAXIS_ENDSTOP_PIN -1 // <0 0> No Endstop!
 
-#define YAXIS_DIR_PIN 14
-#define YAXIS_STEP_PIN 15
-#define YAXIS_ENABLE_PIN 21
-#define YAXIS_MS1_PIN 19      //don't make this connection!! ADC6 and ADC7 can not be used as a digital pin ( I made the pull up connection manually)
-#define YAXIS_MS2_PIN 28
-//#define YAXIS_MS3_PIN 18
-#define YAXIS_ENDSTOP_PIN -1    //13    
-
-#define XAXIS_DIR_PIN 10
-#define XAXIS_STEP_PIN 8
-#define XAXIS_ENABLE_PIN 2
-#define XAXIS_MS1_PIN 3
-#define XAXIS_MS2_PIN 4
-#define XAXIS_ENDSTOP_PIN -1 // <0 0> No Endstop!
-
-#define SERVO_PIN 13
+#define SERVO_PIN 4
 
 /*
  * Other Configuration
  */
 
-#define DEFAULT_PEN_UP_POSITION 35
-#define XAXIS_MIN_STEPCOUNT -5.6*230000
-#define XAXIS_MAX_STEPCOUNT 5*230000
-#define DEFAULT_ZOOM_FACTOR 0.1808 // With a Zoom-Faktor of .65, I can print gcode for Makerbot Unicorn without changes. 
+#define DEFAULT_PEN_UP_POSITION 30
+#define XAXIS_MIN_STEPCOUNT -300
+#define XAXIS_MAX_STEPCOUNT 300
+#define DEFAULT_ZOOM_FACTOR 1. // With a Zoom-Faktor of .65, I can print gcode for Makerbot Unicorn without changes. 
 // The zoom factor can be also manipulated by the propretiary code M402
 
 
 /* --------- */
 
-StepperModel xAxisStepper(XAXIS_DIR_PIN, XAXIS_STEP_PIN, XAXIS_ENABLE_PIN, XAXIS_ENDSTOP_PIN, XAXIS_MS1_PIN, XAXIS_MS2_PIN, XAXIS_VMS1, XAXIS_VMS2,
+StepperModel xAxisStepper(XAXIS_DIR_PIN, XAXIS_STEP_PIN, XAXIS_ENABLE_PIN, XAXIS_ENDSTOP_PIN,
 		XAXIS_MIN_STEPCOUNT, XAXIS_MAX_STEPCOUNT, 200.0, 16);
-StepperModel rotationStepper(YAXIS_DIR_PIN, YAXIS_STEP_PIN, YAXIS_ENABLE_PIN, YAXIS_ENDSTOP_PIN, YAXIS_MS1_PIN, YAXIS_MS2_PIN, YAXIS_VMS1, YAXIS_VMS2,
+StepperModel rotationStepper(YAXIS_DIR_PIN, YAXIS_STEP_PIN, YAXIS_ENABLE_PIN, YAXIS_ENDSTOP_PIN,
 		0, 0, 200.0, 16);
 
 SoftwareServo servo;
@@ -111,17 +85,14 @@ boolean comment_mode = false;
 double currentOffsetX = 0.;
 double currentOffsetY = 0.;
 boolean absoluteMode = true;
-double feedrate = 300.; // mm/minute
+double feedrate = 2000.; // mm/minute
 double zoom = DEFAULT_ZOOM_FACTOR;
 
-const double maxFeedrate = 2000.;
-
+const double maxFeedrate = 6000.;
 // ------
 
 void setup() {
 	Serial.begin(115200);
-	Serial.print(VERSIONCODE);
-	Serial.print("\n");
 
 	clear_buffer();
 
@@ -139,13 +110,16 @@ void setup() {
 	Timer1.initialize(TIMER_DELAY); // Timer for updating pwm pins
 	Timer1.attachInterrupt(doInterrupt);
 
-#ifdef AUTO_HOMING
-	xAxisStepper.autoHoming();
-	xAxisStepper.setTargetPosition(0.);
-	commitSteppers(maxFeedrate);
-	delay(2000);
-	xAxisStepper.enableStepper(false);
-#endif
+	//#ifdef AUTO_HOMING
+	//    xAxisStepper.autoHoming();
+	//    xAxisStepper.setTargetPosition(0.);
+	//    commitSteppers(maxFeedrate);
+	//    delay(2000);
+	//    xAxisStepper.enableStepper(false);
+	//#endif
+
+
+	Serial.println("ready");
 }
 
 void loop() // input loop, looks for manual input and then checks to see if and serial commands are coming in
@@ -239,7 +213,6 @@ void get_command() // gets commands from serial connection and then calls up sub
 			process_commands(buffer, serial_count);
 			clear_buffer();
 			comment_mode = false; // reset comment mode before each new command is processed
-			//Serial.write("process: command");
 		} else // not end of command
 		{
 			if (serial_char == ';' || serial_char == '(') // semicolon signifies start of comment
@@ -255,9 +228,7 @@ void get_command() // gets commands from serial connection and then calls up sub
 				{
 					clear_buffer();
 					Serial.flush();
-					Serial.print("Overflow Error");
 				}
-			} else {
 			}
 		}
 	}
@@ -279,21 +250,10 @@ boolean getValue(char key, char command[], double* value) {
 	return false;
 }
 
-void check_for_version_controll(char command) {
-	if (command == 'V') {
-		Serial.print(VERSIONCODE);
-		Serial.print("\n");
-	}
-}
-
 void process_commands(char command[], int command_length) // deals with standardized input from serial connection
 {
-	if (command_length == 1) {
-		check_for_version_controll(command[0]);
-	}
 	if (command_length > 0 && command[0] == 'G') // G code
 	{
-		//Serial.print("process G: \n");
 		int codenum = (int) strtod(&command[1], NULL);
 
 		double tempX = xAxisStepper.getCurrentPosition();
@@ -301,7 +261,7 @@ void process_commands(char command[], int command_length) // deals with standard
 
 		double xVal;
 		boolean hasXVal = getValue('X', command, &xVal);
-		if (hasXVal) xVal *= zoom * 1.71 / 2; //this factor is for correction to meet the unicorn coordinates    
+		if (hasXVal) xVal *= zoom;
 		double yVal;
 		boolean hasYVal = getValue('Y', command, &yVal);
 		if (hasYVal) yVal *= zoom;
@@ -365,21 +325,15 @@ void process_commands(char command[], int command_length) // deals with standard
 					}
 				}
 				break;
-			case 21: // G21 metric 
-				break;
 			case 90: // G90, Absolute Positioning
 				absoluteMode = true;
 				break;
 			case 91: // G91, Incremental Positioning
 				absoluteMode = false;
 				break;
-			case 92: // G92 homing
-				break;
 		}
-	}
-	else if (command_length > 0 && command[0] == 'M') // M code
+	} else if (command_length > 0 && command[0] == 'M') // M code
 	{
-		//Serial.print("proces M:\n");
 		double value;
 		int codenum = (int) strtod(&command[1], NULL);
 		switch (codenum) {
@@ -398,7 +352,7 @@ void process_commands(char command[], int command_length) // deals with standard
 						servo.write((int) value);
 						for (int i = 0; i < 100; i++) {
 							SoftwareServo::refresh();
-							delay(80);
+							delay(4);
 						}
 						servoEnabled = false;
 					}
@@ -426,23 +380,19 @@ void process_commands(char command[], int command_length) // deals with standard
 				}
 				break;
 
-			case 402: // Propretary: Reset Y-Axis-Stepper settings to new object diameter
+			case 402: // Propretary: Set global zoom factor
 				if (getValue('S', command, &value)) {
-					zoom = value / 100;
+					zoom = value;
 				}
-				break;
-			default:
-				break;
 
 		}
 	}
 
-	//done processing commands
-	//if (Serial.available() <= 0) {
-	Serial.print("ok:");
-	//Serial.println(command);
-	Serial.print("\n");
-	//}
+	// done processing commands
+	if (Serial.available() <= 0) {
+		Serial.print("ok:");
+		Serial.println(command);
+	}
 }
 
 /* This code was ported from the Makerbot/ReplicatorG java sources */
@@ -472,7 +422,7 @@ void drawArc(double centerX, double centerY, double endpointX, double endpointY,
 	if (clockwise) {
 		angleA = atan2(bY, bX);
 		angleB = atan2(aY, aX);
-	}		// Counterclockwise
+	}// Counterclockwise
 	else {
 		angleA = atan2(aY, aX);
 		angleB = atan2(bY, bX);
