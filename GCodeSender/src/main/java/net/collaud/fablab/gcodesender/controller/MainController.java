@@ -2,6 +2,8 @@ package net.collaud.fablab.gcodesender.controller;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -12,8 +14,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -53,6 +53,7 @@ public class MainController implements Initializable {
 
 	private Optional<SerialPortDefinition> selectedPort = Optional.empty();
 	private Optional<File> selectedFile = Optional.empty();
+	private List<String> logLines = new ArrayList<>();
 
 	@FXML
 	private void reloadPorts() {
@@ -81,14 +82,12 @@ public class MainController implements Initializable {
 	private void print() {
 		log.info("Print file {} on port {}", selectedFile.get().getAbsolutePath(), selectedPort.get());
 		gcodeService.sendFile(selectedFile.get(), selectedPort.get());
-		logBuilder = new StringBuilder();
+		logLines.clear();
 	}
 	
 	public void updateButtonPrint() {
 		buttonPrint.setDisable(!selectedFile.isPresent() || !selectedPort.isPresent());
 	}
-
-	private StringBuilder logBuilder = new StringBuilder();
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
@@ -100,14 +99,15 @@ public class MainController implements Initializable {
 		});
 		gcodeService.addObserver((Observable o, Object arg) -> {
 			NotifyMessage msg = (NotifyMessage) arg;
-			logBuilder.append("<div style=\"color:");
-			logBuilder.append(msg.getType() == NotifyMessage.Type.ERROR ? "red" : "black");
-			logBuilder.append(";\">");
-			logBuilder.append(msg.getType().toString());
-			logBuilder.append(" ");
-			logBuilder.append(msg.getMessage());
-			logBuilder.append("</div>");
-			log.info("log is " + logBuilder.toString());
+			StringBuilder sb = new StringBuilder();
+			sb.append("<div style=\"color:");
+			sb.append(msg.getType() == NotifyMessage.Type.ERROR ? "red" : "black");
+			sb.append(";\">");
+			sb.append(msg.getType().toString());
+			sb.append(" ");
+			sb.append(msg.getMessage());
+			sb.append("</div>");
+			logLines.add(sb.toString());
 			Platform.runLater(() -> updateLog());
 		});
 
@@ -128,11 +128,12 @@ public class MainController implements Initializable {
 		html.append("</head>");
 		html.append("<body onload='toBottom()'>");
 
-		html.append(logBuilder);
+		logLines.forEach(line ->html.append(line));
+		html.append("<div>&nbsp;</div>");
 
 		html.append("</body></html>");
 
-		htmlLog.getEngine().loadContent(logBuilder.toString());
+		htmlLog.getEngine().loadContent(html.toString());
 	}
 	
 }
