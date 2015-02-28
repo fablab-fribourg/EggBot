@@ -34,7 +34,7 @@
                   <ComboBox fx:id="comboPort" prefWidth="150.0" promptText="Chose a port" />
                   <Button mnemonicParsing="false" onAction="#reloadPorts" prefHeight="25.0" prefWidth="150.0" text="Reload ports list" GridPane.columnIndex="1" />
                   <Button mnemonicParsing="false" onAction="#chooseGCodeFile" text="Choose gcode file" GridPane.rowIndex="1" />
-                  <Label fx:id="labelFile" minWidth="400.0" text="No file selected yet asfls sa kdfls sldfk jsdlf" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label fx:id="labelFile" minWidth="400.0" text="No file selected yet" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <Button fx:id="buttonPrint" mnemonicParsing="false" onAction="#print" text="Print that egg !" GridPane.rowIndex="2" />
                </children>
             </GridPane>

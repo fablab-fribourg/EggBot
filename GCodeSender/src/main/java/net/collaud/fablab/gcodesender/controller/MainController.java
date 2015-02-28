@@ -83,7 +83,7 @@ public class MainController implements Initializable {
 		gcodeService.sendFile(selectedFile.get(), selectedPort.get());
 		logBuilder = new StringBuilder();
 	}
-
+	
 	public void updateButtonPrint() {
 		buttonPrint.setDisable(!selectedFile.isPresent() || !selectedPort.isPresent());
 	}
@@ -112,9 +112,9 @@ public class MainController implements Initializable {
 		});
 
 		//Fixme test
-		selectedFile = Optional.of(new File("C:\\Users\\Gaétan\\Documents\\output_0001.gcode"));
-		selectedPort = Optional.of(new SerialPortDefinition("COM10"));
-		updateButtonPrint();
+//		selectedFile = Optional.of(new File("C:\\Users\\gaetan\\Documents\\output_0014.gcode"));
+//		selectedPort = Optional.of(new SerialPortDefinition("COM8"));
+//		updateButtonPrint();
 	}
 
 	private void updateLog() {
@@ -134,4 +134,5 @@ public class MainController implements Initializable {
 
 		htmlLog.getEngine().loadContent(logBuilder.toString());
 	}
+	
 }

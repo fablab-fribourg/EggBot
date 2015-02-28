@@ -1,10 +1,9 @@
 package net.collaud.fablab.gcodesender.serial;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import jssc.SerialPort;
@@ -56,21 +55,53 @@ public class SerialService {
 
 	class SerialPortReader implements SerialPortEventListener {
 
+		private StringBuilder buffer = new StringBuilder();
+
 		@Override
-		public void serialEvent(SerialPortEvent event) {
+		synchronized public void serialEvent(SerialPortEvent event) {
 			if (event.isRXCHAR()) {
 				try {
 					//FIXME read untile new line
-					byte buffer[] = openPort.readBytes();
-					if (buffer != null) {
-						String line = new String(buffer);
-						log.trace("read : {}", line);
-						readingQueue.add(line);
+					byte buff[] = openPort.readBytes();
+					if (buff != null) {
+						buffer.append(new String(buff));
+						checkForNewLine();
 					}
+
 				} catch (SerialPortException ex) {
 					log.error("Error while reading", ex);
 				}
 			}
+		}
+
+		public void checkForNewLine() {
+			boolean lineFound;
+			String buffStr = buffer.toString();
+
+			int lastIndex = 0;
+			int index;
+			while ((index = buffStr.indexOf("\n", lastIndex)) > 0) {
+				String line = buffStr.substring(lastIndex, index);
+				log.info("new line : {}", line);
+				readingQueue.add(line);
+				lastIndex = index + 1;
+			}
+			buffer = new StringBuilder(buffStr.substring(lastIndex));
+
+//				StringBuilder sb = new StringBuilder();
+//				for (int i = 0; i < buffer.size(); i++) {
+//					byte b = buffer.get(i);
+//					if (b == '\n') {
+//						lineFound = true;
+//						buffer = buffer.subList(i+1, buffer.size() - 1);
+//						String line = sb.toString();
+//						log.info("new line : {}", line);
+//						readingQueue.add(sb.toString());
+//						break;
+//					} else {
+//						sb.append((char)b);
+//					}
+//				}
 		}
 	}
 }

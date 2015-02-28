@@ -80,20 +80,20 @@ public class GcodeService extends Observable {
 			try {
 				serialService.getReadingQueue().clear();
 				serialService.openPort(port);
-				sleep(5000);
+
+				notifyInfo("Waiting for arduino to be ready");
+				String rep;
+				do {
+					rep = serialService.getReadingQueue().take();
+				} while (!rep.contains("ready"));
+
+				notifyInfo("Arduino is ready");
 
 				notifyInfo("Start sending GCode");
 
 				for (String line : lines) {
 					notifyInfo("Sending : " + line);
-					serialService.write(line);
-					String rep;
-					do {
-						rep = serialService.getReadingQueue().take();
-						if(rep != null && !rep.startsWith("ok")){
-							notifyError("Wrong message received : "+rep);
-						}
-					} while (rep != null && !rep.startsWith("ok"));
+					writeLineAndWaitOk(line);
 				}
 
 				serialService.closePort();
@@ -105,6 +105,18 @@ public class GcodeService extends Observable {
 			notifyInfo("End of print");
 		}
 
+		private boolean writeLineAndWaitOk(String line) throws SerialPortException, InterruptedException {
+			String rep;
+			serialService.write(line);
+			do {
+				rep = serialService.getReadingQueue().take();
+				if (rep != null && !rep.startsWith("ok")) {
+					notifyError("Wrong message received : " + rep);
+				}
+			} while (rep != null && !rep.startsWith("ok"));
+			return true;
+		}
+
 		private int readLines(File file) {
 			int count = 0;
 			try {
@@ -112,8 +124,8 @@ public class GcodeService extends Observable {
 				lines = new LinkedList<>();
 				String line;
 				while ((line = br.readLine()) != null) {
-					//FIXME remove comment
 					if (isGcodeLine(line)) {
+						line = InkscapeEggbotConverter.lineConvertLine(line);
 						lines.add(line);
 						count++;
 					}
