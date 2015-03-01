@@ -7,13 +7,24 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<TitledPane id="AnchorPane"
-			collapsible="false"
-			prefHeight="400.0" prefWidth="600.0" 
-			styleClass="mainFxmlClass" text="Control"
-			xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8"
-			fx:controller="net.collaud.fablab.gcodesender.controller.ControlController">
+<TitledPane id="AnchorPane" collapsible="false" prefWidth="600.0" styleClass="mainFxmlClass" text="Control" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.ControlController">
 	<stylesheets>
 		<URL value="@/styles/Styles.css" />
 	</stylesheets>
+   <content>
+      <VBox alignment="CENTER" spacing="5.0">
+         <children>
+            <HBox alignment="CENTER" spacing="5.0">
+               <children>
+                  <Button mnemonicParsing="false" text="Pen up" />
+                  <Button mnemonicParsing="false" text="Pen down" />
+               </children>
+            </HBox>
+            <Label text="X" />
+            <Slider majorTickUnit="10.0" max="30.0" min="-30.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
+            <Label text="Y" />
+            <Slider majorTickUnit="10.0" max="30.0" min="-30.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" />
+         </children>
+      </VBox>
+   </content>
 </TitledPane>

@@ -82,8 +82,6 @@ public class GcodeService extends Observable<GcodeNotifyMessage> {
 					notifyInfo(line);
 					writeLineAndWaitOk(line);
 				}
-
-				serialService.closePort();
 			} catch (SerialPortException ex) {
 				notifyError("Problem with serial", ex);
 			} catch (InterruptedException ex) {
