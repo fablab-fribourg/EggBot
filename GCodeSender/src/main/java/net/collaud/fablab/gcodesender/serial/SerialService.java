@@ -2,9 +2,16 @@ package net.collaud.fablab.gcodesender.serial;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
@@ -12,7 +19,8 @@ import jssc.SerialPortException;
 import jssc.SerialPortList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.collaud.fablab.gcodesender.tools.Observable;
+import net.collaud.fablab.gcodesender.Constants;
+import static net.collaud.fablab.gcodesender.Constants.ARDUINO_READY_TIMEOUT_MS;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,51 +29,91 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class SerialService extends Observable<PortStatus> {
-	
+public class SerialService implements Constants {
+
 	private SerialPort openPort;
-	
+
+	@Getter
+	private final ObjectProperty<PortStatus> portStatus = new SimpleObjectProperty<>(PortStatus.CLOSED);
+
 	@Getter
 	private final BlockingQueue<String> readingQueue = new LinkedBlockingQueue<>();
-	
+
 	public List<SerialPortDefinition> getListPorts() {
 		return Arrays.stream(SerialPortList.getPortNames())
 				.map(n -> new SerialPortDefinition(n))
 				.collect(Collectors.toList());
 	}
-	
+
 	synchronized public void openPort(SerialPortDefinition def) {
-		notifyObservers(PortStatus.OPENNING);
-		try {
-			openPort = new SerialPort(def.getName());
-			openPort.openPort();
-			openPort.setParams(SerialPort.BAUDRATE_115200,
-					SerialPort.DATABITS_8,
-					SerialPort.STOPBITS_1,
-					SerialPort.PARITY_NONE);
-			
-			openPort.addEventListener(new SerialPortReader());
-		} catch (SerialPortException ex) {
-			log.error("Cannot open port", ex);
-			notifyObservers(PortStatus.ERROR);
-		}
-		notifyObservers(PortStatus.OPEN);
+		portStatus.set(PortStatus.OPENNING);
+		new PortOpenenr(def.getName()).start();
 	}
-	
+
 	synchronized public void write(String line) throws SerialPortException {
 		openPort.writeString(line + "\n");
 	}
-	
-	public void closePort() throws SerialPortException {
-		notifyObservers(PortStatus.CLOSING);
-		openPort.closePort();
-		notifyObservers(PortStatus.CLOSE);
+
+	public void closePort() {
+		try {
+			setPortStatusInFXThread(PortStatus.CLOSING);
+			openPort.closePort();
+			setPortStatusInFXThread(PortStatus.CLOSED);
+		} catch (SerialPortException ex) {
+			Logger.getLogger(SerialService.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
-	
+
+	protected void setPortStatusInFXThread(PortStatus status) {
+		Platform.runLater(() -> {
+			portStatus.set(status);
+		});
+	}
+
+	class PortOpenenr extends Thread {
+
+		private final String portName;
+
+		public PortOpenenr(String portName) {
+			super("Serial port opener : " + portName);
+			this.portName = portName;
+		}
+
+		@Override
+		public void run() {
+			try {
+				openPort = new SerialPort(portName);
+				openPort.openPort();
+				openPort.setParams(SerialPort.BAUDRATE_115200,
+						SerialPort.DATABITS_8,
+						SerialPort.STOPBITS_1,
+						SerialPort.PARITY_NONE);
+
+				openPort.addEventListener(new SerialPortReader());
+
+				setPortStatusInFXThread(PortStatus.WAITING_FOR_ARDUINO);
+
+				String rep;
+				do {
+					rep = readingQueue.poll(ARDUINO_READY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+				} while (rep != null && !rep.startsWith("ready"));
+				if (rep == null) {
+					setPortStatusInFXThread(PortStatus.NOT_RESPONDING);
+				} else {
+					setPortStatusInFXThread(PortStatus.OPEN);
+				}
+
+			} catch (InterruptedException | SerialPortException ex) {
+				log.error("Cannot open port", ex);
+				setPortStatusInFXThread(PortStatus.ERROR);
+			}
+		}
+	}
+
 	class SerialPortReader implements SerialPortEventListener {
-		
+
 		private StringBuilder buffer = new StringBuilder();
-		
+
 		@Override
 		synchronized public void serialEvent(SerialPortEvent event) {
 			if (event.isRXCHAR()) {
@@ -76,17 +124,16 @@ public class SerialService extends Observable<PortStatus> {
 						buffer.append(new String(buff));
 						checkForNewLine();
 					}
-					
+
 				} catch (SerialPortException ex) {
 					log.error("Error while reading", ex);
 				}
 			}
 		}
-		
+
 		public void checkForNewLine() {
-			boolean lineFound;
 			String buffStr = buffer.toString();
-			
+
 			int lastIndex = 0;
 			int index;
 			while ((index = buffStr.indexOf("\n", lastIndex)) > 0) {
@@ -96,21 +143,6 @@ public class SerialService extends Observable<PortStatus> {
 				lastIndex = index + 1;
 			}
 			buffer = new StringBuilder(buffStr.substring(lastIndex));
-
-//				StringBuilder sb = new StringBuilder();
-//				for (int i = 0; i < buffer.size(); i++) {
-//					byte b = buffer.get(i);
-//					if (b == '\n') {
-//						lineFound = true;
-//						buffer = buffer.subList(i+1, buffer.size() - 1);
-//						String line = sb.toString();
-//						log.info("new line : {}", line);
-//						readingQueue.add(sb.toString());
-//						break;
-//					} else {
-//						sb.append((char)b);
-//					}
-//				}
 		}
 	}
 }

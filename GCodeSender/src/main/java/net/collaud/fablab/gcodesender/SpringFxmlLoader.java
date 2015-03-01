@@ -23,6 +23,7 @@ public class SpringFxmlLoader {
 		try (InputStream fxmlStream = SpringFxmlLoader.class.getResourceAsStream(url)) {
 			log.info("URL : " + SpringFxmlLoader.class.getResourceAsStream(url));
 			lastLoader = new FXMLLoader();
+			lastLoader.setLocation(SpringFxmlLoader.class.getResource("/"));
 			lastLoader.setControllerFactory(new Callback<Class<?>, Object>() {
 				@Override
 				public Object call(Class<?> clazz) {

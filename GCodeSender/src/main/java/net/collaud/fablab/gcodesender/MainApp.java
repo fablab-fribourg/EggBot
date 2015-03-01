@@ -15,7 +15,7 @@ public class MainApp extends Application {
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		Parent root = (Parent) loader.load("/fxml/mainScene.fxml");
+		Parent root = (Parent) loader.load("/mainScene.fxml");
 		((MainController) loader.getController()).setStage(stage);
 
 		Scene scene = new Scene(root);

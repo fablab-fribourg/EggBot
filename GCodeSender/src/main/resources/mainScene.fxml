@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.paint.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.web.*?>
 <?import javafx.scene.image.*?>
@@ -9,29 +10,32 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane minHeight="600.0" minWidth="800.0" prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.MainController">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" 
+			minHeight="600.0" minWidth="800.0" prefHeight="200.0" prefWidth="200.0"
+			xmlns="http://javafx.com/javafx/8"
+			fx:controller="net.collaud.fablab.gcodesender.controller.MainController">
    <bottom>
         <Label fx:id="label" minHeight="16" minWidth="69" BorderPane.alignment="CENTER" />
    </bottom>
    <top>
       <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@images/fablab-logo.jpg" />
-               </image>
-            </ImageView>
-            <TitledPane animated="false" collapsible="false" prefHeight="200.0" text="Port">
+            <TitledPane fx:id="panePort" animated="false" collapsible="false" prefHeight="200.0" prefWidth="200.0" text="Port">
               <content>
                   <VBox spacing="5.0">
                      <children>
                         <HBox>
                            <children>
                               <ComboBox fx:id="comboPort" layoutY="14.0" prefWidth="150.0" promptText="Chose a port" />
-                              <Button mnemonicParsing="false" onAction="#reloadPorts" prefHeight="25.0" prefWidth="23.0" text="R" />
+                              <Button fx:id="buttonReloadPort" mnemonicParsing="false" onAction="#reloadPorts" prefHeight="25.0" prefWidth="23.0" text="R" />
                            </children>
                         </HBox>
-                        <Button fx:id="buttonOpenPort" mnemonicParsing="false" onAction="#openPort" text="Open Port" />
+                        <HBox spacing="5.0">
+                           <children>
+                              <Button fx:id="buttonOpenPort" mnemonicParsing="false" onAction="#openPort" text="Open Port" />
+                              <Button fx:id="buttonClosePort" mnemonicParsing="false" onAction="#closePort" text="Close port" />
+                           </children>
+                        </HBox>
                         <Label fx:id="labelPortStatus" text="close" />
                      </children>
                   </VBox>
@@ -40,7 +44,7 @@
                   <Insets />
                </HBox.margin>
             </TitledPane>
-            <TitledPane animated="false" collapsible="false" prefHeight="200.0" text="GCode">
+            <TitledPane fx:id="paneFile" animated="false" collapsible="false" prefHeight="200.0" prefWidth="150.0" text="File">
                <content>
                   <VBox spacing="5.0">
                      <children>
@@ -50,7 +54,7 @@
                   </VBox>
                </content>
             </TitledPane>
-            <TitledPane animated="false" collapsible="false" prefHeight="200.0" text="Print">
+            <TitledPane fx:id="panePrint" animated="false" collapsible="false" prefHeight="200.0" prefWidth="150.0" text="Print">
                <content>
                   <VBox spacing="5.0">
                      <children>
@@ -60,6 +64,16 @@
                   </VBox>
                </content>
             </TitledPane>
+			<!--<fx:include source="control.fxml"/>-->
+            <HBox alignment="TOP_RIGHT" HBox.hgrow="ALWAYS">
+               <children>
+                  <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS">
+                     <image>
+                        <Image url="@images/fablab-logo.jpg" />
+                     </image>
+                  </ImageView>
+               </children>
+            </HBox>
          </children>
       </HBox>
    </top>

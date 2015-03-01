@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class GcodeService extends Observable<NotifyMessage> {
+public class GcodeService extends Observable<GcodeNotifyMessage> {
 
 	@Autowired
 	private SerialService serialService;
@@ -39,7 +39,7 @@ public class GcodeService extends Observable<NotifyMessage> {
 
 	protected void notifyInfo(String msg) {
 		log.info("notify : " + msg);
-		notifyObservers(new NotifyMessage(NotifyMessage.Type.INFO, msg));
+		notifyObservers(new GcodeNotifyMessage(GcodeNotifyMessage.Type.INFO, msg));
 	}
 
 	protected void notifyError(String msg) {
@@ -49,15 +49,15 @@ public class GcodeService extends Observable<NotifyMessage> {
 	protected void notifyError(String msg, Exception ex) {
 		log.error(msg, ex);
 		if (ex != null) {
-			notifyObservers(new NotifyMessage(NotifyMessage.Type.ERROR, msg + " : " + ex.getMessage()));
+			notifyObservers(new GcodeNotifyMessage(GcodeNotifyMessage.Type.ERROR, msg + " : " + ex.getMessage()));
 		} else {
-			notifyObservers(new NotifyMessage(NotifyMessage.Type.ERROR, msg));
+			notifyObservers(new GcodeNotifyMessage(GcodeNotifyMessage.Type.ERROR, msg));
 		}
 	}
 
-
 	public void stopPrint() {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
+		notifyError("Print cancelled !");
 	}
 
 	class GcodeThread extends Thread {
@@ -78,21 +78,8 @@ public class GcodeService extends Observable<NotifyMessage> {
 			notifyInfo("Gcode loaded, " + nbLines + " lines read");
 			notifyInfo("Opening port " + port);
 			try {
-				serialService.getReadingQueue().clear();
-				serialService.openPort(port);
-
-				notifyInfo("Waiting for arduino to be ready");
-				String rep;
-				do {
-					rep = serialService.getReadingQueue().take();
-				} while (!rep.contains("ready"));
-
-				notifyInfo("Arduino is ready");
-
-				notifyInfo("Start sending GCode");
-
 				for (String line : lines) {
-					notifyInfo("Sending : " + line);
+					notifyInfo(line);
 					writeLineAndWaitOk(line);
 				}
 
@@ -102,7 +89,7 @@ public class GcodeService extends Observable<NotifyMessage> {
 			} catch (InterruptedException ex) {
 				//nothing to do here
 			}
-			notifyInfo("End of print");
+			notifyObservers(new GcodeNotifyMessage(GcodeNotifyMessage.Type.INFO, "% End of print", true));
 		}
 
 		private boolean writeLineAndWaitOk(String line) throws SerialPortException, InterruptedException {
