@@ -14,16 +14,11 @@
    <content>
       <VBox alignment="CENTER" spacing="5.0">
          <children>
-            <HBox alignment="CENTER" spacing="5.0">
-               <children>
-                  <Button mnemonicParsing="false" text="Pen up" />
-                  <Button mnemonicParsing="false" text="Pen down" />
-               </children>
-            </HBox>
-            <Label text="X" />
-            <Slider majorTickUnit="10.0" max="30.0" min="-30.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
-            <Label text="Y" />
-            <Slider majorTickUnit="10.0" max="30.0" min="-30.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" />
+			<fx:include source="linearControl.fxml" fx:id="servo" />
+            <Separator />
+			<fx:include source="linearControl.fxml" fx:id="x" />
+            <Separator />
+			<fx:include source="linearControl.fxml" fx:id="y" />
          </children>
       </VBox>
    </content>

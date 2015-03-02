@@ -32,10 +32,13 @@ import net.collaud.fablab.gcodesender.serial.PortStatus;
 import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 //FIXME persit lastDirectory and port
 @Controller
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class MainController implements Initializable {
 
@@ -83,6 +86,9 @@ public class MainController implements Initializable {
 
 	@FXML
 	private TitledPane panePrint;
+	
+	@FXML
+	private TitledPane controlPane;
 
 	private final ObjectProperty<File> selectedFile = new SimpleObjectProperty<>();
 	private final List<String> logLines = new ArrayList<>();
@@ -194,6 +200,9 @@ public class MainController implements Initializable {
 				printing.set(false);
 			}
 		});
+		
+		//Pane control
+		controlPane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
 
 		reloadPorts();
 

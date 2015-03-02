@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.LinearControlController">
+   <children>
+      <HBox alignment="CENTER">
+         <children>
+            <Label fx:id="labelTitle" text="" />
+            <Label text=" - " />
+            <Label fx:id="labelCurrent" text="0.0" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER">
+         <children>
+            <Button fx:id="buttonSetMin" mnemonicParsing="false" onAction="#setCurrentToMin" text="Set" />
+            <TextField fx:id="textMin" prefWidth="50.0" />
+            <Slider fx:id="slider" majorTickUnit="10.0" max="30.0" min="-30.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" snapToTicks="true" HBox.hgrow="ALWAYS">
+               <HBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </HBox.margin></Slider>
+            <TextField fx:id="textMax" prefWidth="50.0" />
+            <Button fx:id="buttonSetMax" mnemonicParsing="false" onAction="#setCurrentToMax" text="Set" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
