@@ -22,14 +22,8 @@ public class SpringFxmlLoader {
 	public Object load(String url) {
 		try (InputStream fxmlStream = SpringFxmlLoader.class.getResourceAsStream(url)) {
 			log.info("URL : " + SpringFxmlLoader.class.getResourceAsStream(url));
-			lastLoader = new FXMLLoader();
-			lastLoader.setLocation(SpringFxmlLoader.class.getResource("/"));
-			lastLoader.setControllerFactory(new Callback<Class<?>, Object>() {
-				@Override
-				public Object call(Class<?> clazz) {
-					return applicationContext.getBean(clazz);
-				}
-			});
+			lastLoader = new FXMLLoader(SpringFxmlLoader.class.getResource("/fxml/"));
+			lastLoader.setControllerFactory((Class<?> clazz) -> applicationContext.getBean(clazz));
 			return lastLoader.load(fxmlStream);
 		} catch (IOException ioException) {
 			log.error("Cannot load file " + url);

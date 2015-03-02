@@ -73,7 +73,7 @@
    <center>
       <VBox>
          <children>
-			<fx:include source="/control.fxml" />
+			<fx:include source="control.fxml" />
             <WebView fx:id="htmlLog" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
          </children>
       </VBox>
