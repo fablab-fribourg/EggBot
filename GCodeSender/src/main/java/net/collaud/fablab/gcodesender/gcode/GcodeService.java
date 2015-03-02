@@ -5,11 +5,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
 import jssc.SerialPortException;
 import lombok.extern.slf4j.Slf4j;
+import net.collaud.fablab.gcodesender.Constants;
 import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import net.collaud.fablab.gcodesender.tools.Observable;
@@ -22,7 +25,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class GcodeService extends Observable<GcodeNotifyMessage> {
+public class GcodeService extends Observable<GcodeNotifyMessage> implements Constants {
 
 	@Autowired
 	private SerialService serialService;
@@ -30,6 +33,8 @@ public class GcodeService extends Observable<GcodeNotifyMessage> {
 	private Queue<String> lines;
 
 	private GcodeThread thread;
+	
+	private final NumberFormat formatter = new DecimalFormat("#0.0000");
 
 	public void print(File file, SerialPortDefinition port) {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
@@ -60,6 +65,41 @@ public class GcodeService extends Observable<GcodeNotifyMessage> {
 		notifyError("Print cancelled !");
 	}
 
+	public void move(Motor motor, double position) {
+		String posStr = formatter.format(position);
+		switch (motor) {
+			case PEN:
+				writeLineAndWaitOk("M300S" + posStr);
+				break;
+			case X:
+				writeLineAndWaitOk("G00 X" + posStr);
+				break;
+			case Y:
+				writeLineAndWaitOk("G00 Y" + posStr);
+				break;
+
+		}
+		
+	}
+
+	private boolean writeLineAndWaitOk(String line) {
+		notifyInfo(line);
+		try {
+			String rep;
+			serialService.write(line);
+			do {
+				rep = serialService.getReadingQueue().take();
+				if (rep != null && !rep.startsWith("ok")) {
+					notifyError("Wrong message received : " + rep);
+				}
+			} while (rep != null && !rep.startsWith("ok"));
+		} catch (SerialPortException | InterruptedException ex) {
+			notifyError("Error while writing gcode line : " + line, ex);
+			return false;
+		}
+		return true;
+	}
+
 	class GcodeThread extends Thread {
 
 		private final File file;
@@ -77,29 +117,19 @@ public class GcodeService extends Observable<GcodeNotifyMessage> {
 			int nbLines = readLines(file);
 			notifyInfo("Gcode loaded, " + nbLines + " lines read");
 			notifyInfo("Opening port " + port);
-			try {
-				for (String line : lines) {
-					notifyInfo(line);
-					writeLineAndWaitOk(line);
+			for (String line : lines) {
+				if (!writeLineAndWaitOk(line)) {
+					//Something when wrong !
+					break;
 				}
-			} catch (SerialPortException ex) {
-				notifyError("Problem with serial", ex);
-			} catch (InterruptedException ex) {
-				//nothing to do here
+				if (line.startsWith("M")) {
+					try {
+						Thread.sleep(M_COMMAND_WAIT);
+					} catch (InterruptedException ex) {
+					}
+				}
 			}
 			notifyObservers(new GcodeNotifyMessage(GcodeNotifyMessage.Type.INFO, "% End of print", true));
-		}
-
-		private boolean writeLineAndWaitOk(String line) throws SerialPortException, InterruptedException {
-			String rep;
-			serialService.write(line);
-			do {
-				rep = serialService.getReadingQueue().take();
-				if (rep != null && !rep.startsWith("ok")) {
-					notifyError("Wrong message received : " + rep);
-				}
-			} while (rep != null && !rep.startsWith("ok"));
-			return true;
 		}
 
 		private int readLines(File file) {
