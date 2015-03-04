@@ -3,6 +3,7 @@ package net.collaud.fablab.gcodesender.controller;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -86,12 +87,12 @@ public class MainController implements Initializable {
 
 	@FXML
 	private TitledPane panePrint;
-	
+
 	@FXML
 	private TitledPane controlPane;
 
 	private final ObjectProperty<File> selectedFile = new SimpleObjectProperty<>();
-	private final List<String> logLines = new ArrayList<>();
+	private final List<String> logLines = new LinkedList<>();
 	private ObjectProperty<SerialPortDefinition> selectedPort;
 	private final BooleanProperty printing = new SimpleBooleanProperty(false);
 	private File lastDirectory;
@@ -195,12 +196,17 @@ public class MainController implements Initializable {
 			sb.append(msg.getMessage());
 			sb.append("</div>");
 			logLines.add(sb.toString());
-			Platform.runLater(() -> updateLog());
-			if(msg.isEndOfPrint()){
-				printing.set(false);
+			if(logLines.size()>1000){
+				logLines.remove(0);
 			}
+			Platform.runLater(() -> {
+				updateLog();
+				if (msg.isEndOfPrint()) {
+					printing.set(false);
+				}
+			});
 		});
-		
+
 		//Pane control
 		controlPane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
 
