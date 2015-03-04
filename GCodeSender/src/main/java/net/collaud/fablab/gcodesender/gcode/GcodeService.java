@@ -13,6 +13,8 @@ import java.util.Queue;
 import jssc.SerialPortException;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.Constants;
+import net.collaud.fablab.gcodesender.config.Config;
+import net.collaud.fablab.gcodesender.config.ConfigKey;
 import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import net.collaud.fablab.gcodesender.tools.Observable;
@@ -29,6 +31,9 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Autowired
 	private SerialService serialService;
+	
+	@Autowired
+	private Config config;
 
 	private Queue<String> lines;
 
@@ -104,11 +109,13 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 		private final File file;
 		private final SerialPortDefinition port;
+		private final int mCommandWait;
 
 		public GcodeThread(File file, SerialPortDefinition port) {
 			super("Gcode thread : " + file.getAbsolutePath());
 			this.file = file;
 			this.port = port;
+			mCommandWait = config.getIntProperty(ConfigKey.M_COMMAND_WAIT);
 		}
 
 		@Override
@@ -124,7 +131,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 				}
 				if (line.startsWith("M")) {
 					try {
-						Thread.sleep(M_COMMAND_WAIT);
+						Thread.sleep(mCommandWait);
 					} catch (InterruptedException ex) {
 					}
 				}

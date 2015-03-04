@@ -20,7 +20,9 @@ import jssc.SerialPortList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.Constants;
-import static net.collaud.fablab.gcodesender.Constants.ARDUINO_READY_TIMEOUT_MS;
+import net.collaud.fablab.gcodesender.config.Config;
+import net.collaud.fablab.gcodesender.config.ConfigKey;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,6 +32,9 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class SerialService implements Constants {
+	
+	@Autowired
+	private Config config;
 
 	private SerialPort openPort;
 
@@ -73,10 +78,12 @@ public class SerialService implements Constants {
 	class PortOpenenr extends Thread {
 
 		private final String portName;
+		private final int arduinoReadyTimeout;
 
 		public PortOpenenr(String portName) {
 			super("Serial port opener : " + portName);
 			this.portName = portName;
+			arduinoReadyTimeout = config.getIntProperty(ConfigKey.ARDUINO_READY_TIMEOUT_MS);
 		}
 
 		@Override
@@ -95,7 +102,7 @@ public class SerialService implements Constants {
 
 				String rep;
 				do {
-					rep = readingQueue.poll(ARDUINO_READY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+					rep = readingQueue.poll(arduinoReadyTimeout, TimeUnit.MILLISECONDS);
 				} while (rep != null && !rep.startsWith("ready"));
 				if (rep == null) {
 					setPortStatusInFXThread(PortStatus.NOT_RESPONDING);
