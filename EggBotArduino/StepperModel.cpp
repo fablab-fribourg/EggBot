@@ -14,73 +14,68 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
- 
+
 #include "StepperModel.h"
 #include "Arduino.h"
-
 
 /*
  * inEnablePin < 0 => No Endstop
  */
 StepperModel::StepperModel(int inDirPin, int inStepPin, int inEnablePin, int inEndStopPin,
-        long minSC, long maxSC,
-        double in_kStepsPerRevolution, int in_kMicroStepping)
-{
-  kStepsPerRevolution=in_kStepsPerRevolution;
-  kMicroStepping=in_kMicroStepping;
+		long minSC, long maxSC,
+		double in_kStepsPerRevolution, int in_kMicroStepping) {
+	kStepsPerRevolution = in_kStepsPerRevolution;
+	kMicroStepping = in_kMicroStepping;
 
-  dirPin = inDirPin;
-  stepPin = inStepPin;
-  enablePin = inEnablePin;
-  endStopPin = inEndStopPin;
-    
-  minStepCount=minSC;
-  maxStepCount=maxSC;
-  
-  pinMode(dirPin, OUTPUT);  
-  pinMode(stepPin, OUTPUT);  
-  pinMode(enablePin, OUTPUT);  
-  if(endStopPin>=0)
-    pinMode(endStopPin, INPUT);  
+	dirPin = inDirPin;
+	stepPin = inStepPin;
+	enablePin = inEnablePin;
+	endStopPin = inEndStopPin;
 
-  digitalWrite(dirPin, LOW);
-  digitalWrite(stepPin, LOW);
- 
-  currentStepcount=0;
-  targetStepcount=0;
+	minStepCount = minSC;
+	maxStepCount = maxSC;
 
-  steps_per_mm = (int)((kStepsPerRevolution/(45.*M_PI))*kMicroStepping+0.5); // default value for a "normal" egg (45 mm diameter)
-  enableStepper(false);
+	pinMode(dirPin, OUTPUT);
+	pinMode(stepPin, OUTPUT);
+	pinMode(enablePin, OUTPUT);
+	if (endStopPin >= 0)
+		pinMode(endStopPin, INPUT);
+
+	digitalWrite(dirPin, LOW);
+	digitalWrite(stepPin, LOW);
+
+	currentStepcount = 0;
+	targetStepcount = 0;
+
+	steps_per_mm = (int) ((kStepsPerRevolution / (45. * M_PI)) * kMicroStepping + 0.5); // default value for a "normal" egg (45 mm diameter)
+	enableStepper(false);
 }
 
-void StepperModel::resetSteppersForObjectDiameter(double diameter)
-{
-  // Calculate the motor steps required to move per mm.
-  steps_per_mm = (int)((kStepsPerRevolution/(diameter*M_PI))*kMicroStepping+0.5);
-  if(endStopPin>=0)
-  {
+void StepperModel::resetSteppersForObjectDiameter(double diameter) {
+	// Calculate the motor steps required to move per mm.
+	steps_per_mm = (int) ((kStepsPerRevolution / (diameter * M_PI)) * kMicroStepping + 0.5);
+	if (endStopPin >= 0) {
 #ifdef AUTO_HOMING
-    autoHoming();
+		autoHoming();
 #endif
-    enableStepper(false);
-  }
-  else
-    resetStepper();    
+		enableStepper(false);
+	} else
+		resetStepper();
 }
 
-long StepperModel::getStepsForMM(double mm)
-{
-  long steps = (long)(steps_per_mm*mm);
-  
-//  Serial.print("steps for ");
-//  Serial.print(mm);
-//  Serial.print(" mm: ");
-//  Serial.println(steps);
-  
-  return steps;
+long StepperModel::getStepsForMM(double mm) {
+	long steps = (long) (steps_per_mm * mm);
+
+	//  Serial.print("steps for ");
+	//  Serial.print(mm);
+	//  Serial.print(" mm: ");
+	//  Serial.println(steps);
+
+	return steps;
 }
 
 /* Currently unused */
+
 /*
 void StepperModel::setTargetStepcount(long tsc)
 {
@@ -89,7 +84,7 @@ void StepperModel::setTargetStepcount(long tsc)
    delta = targetStepcount-currentStepcount;
    direction = true;
    if (delta != 0) {
-     enableStepper(true);
+	 enableStepper(true);
    }
    if (delta < 0) {
 	delta = -delta;
@@ -97,76 +92,72 @@ void StepperModel::setTargetStepcount(long tsc)
    }
 }*/
 
-void StepperModel::setTargetPosition(double pos)
-{
-   targetPosition = pos;
-   targetStepcount = getStepsForMM(targetPosition);
-   //Serial.println(targetStepcount);
-   delta = targetStepcount-currentStepcount;
-   direction = true;
-   if (delta != 0) {
-     enableStepper(true);
-   }
-   if (delta < 0) {
-	delta = -delta;
-	direction = false;
-   }
+void StepperModel::setTargetPosition(double pos) {
+	targetPosition = pos;
+	targetStepcount = getStepsForMM(targetPosition);
+	//Serial.println(targetStepcount);
+	delta = targetStepcount - currentStepcount;
+	direction = true;
+	if (delta != 0) {
+		enableStepper(true);
+	}
+	if (delta < 0) {
+		delta = -delta;
+		direction = false;
+	}
 }
 
-double StepperModel::getCurrentPosition()
-{
-    return (double)currentStepcount/steps_per_mm;
+double StepperModel::getCurrentPosition() {
+	return (double) currentStepcount / steps_per_mm;
 }
 
-void StepperModel::enableStepper(bool enabled)
-{
-  digitalWrite(enablePin, !enabled);
+void StepperModel::enableStepper(bool enabled) {
+	digitalWrite(enablePin, !enabled);
 }
 
-void StepperModel::resetStepper()
-{
-  enableStepper(false);
-  currentStepcount=0;
-  targetStepcount=0;
-  delta=0;  
+void StepperModel::resetStepper() {
+	enableStepper(false);
+	this->resetPosition();
 }
 
-void StepperModel::doStep(long intervals)
-{
-  counter += delta;
-  if (counter >= 0) {
-    digitalWrite(dirPin, direction?HIGH:LOW);
-    counter -= intervals;
-    if (direction) {
-      if(maxStepCount==0 || currentStepcount<=maxStepCount)
-      {
-        digitalWrite(stepPin, HIGH);
-        currentStepcount++;
-      }
-    } else {
-      if(minStepCount==0 || currentStepcount>=minStepCount)
-      {
-        digitalWrite(stepPin, HIGH);
-        currentStepcount--;
-      }
-    }
-    digitalWrite(stepPin, LOW);
-  }
-}  
+void StepperModel::resetPosition() {
+	currentStepcount = 0;
+	targetStepcount = 0;
+	delta = 0;
+}
+
+void StepperModel::doStep(long intervals) {
+	counter += delta;
+	if (counter >= 0) {
+		digitalWrite(dirPin, direction ? HIGH : LOW);
+		counter -= intervals;
+		if (direction) {
+			if (maxStepCount == 0 || currentStepcount <= maxStepCount) {
+				digitalWrite(stepPin, HIGH);
+				currentStepcount++;
+			}
+		} else {
+			if (minStepCount == 0 || currentStepcount >= minStepCount) {
+				digitalWrite(stepPin, HIGH);
+				currentStepcount--;
+			}
+		}
+		digitalWrite(stepPin, LOW);
+	}
+}
 
 #ifdef AUTO_HOMING
-void StepperModel::autoHoming()
-{
-  enableStepper(true);
-  digitalWrite(dirPin, LOW);
- 
-  while(digitalRead(endStopPin))
-  {
-        digitalWrite(stepPin, HIGH);
-        digitalWrite(stepPin, LOW);
-        delay(1);
-  }
 
-  currentStepcount= minStepCount-16;
+void StepperModel::autoHoming() {
+	enableStepper(true);
+	digitalWrite(dirPin, LOW);
+
+	while (digitalRead(endStopPin)) {
+		digitalWrite(stepPin, HIGH);
+		digitalWrite(stepPin, LOW);
+		delay(1);
+	}
+
+	currentStepcount = minStepCount - 16;
 }
 #endif

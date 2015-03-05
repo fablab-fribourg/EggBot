@@ -68,6 +68,8 @@ public:
   
   void resetStepper();
   
+  void resetPosition();
+  
   void doStep(long intervals);
 };
 

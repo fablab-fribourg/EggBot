@@ -341,7 +341,11 @@ void process_commands(char command[], int command_length) // deals with standard
 				xAxisStepper.resetStepper();
 				rotationStepper.resetStepper();
 				break;
-
+			case 19: // set current position to home
+				xAxisStepper.resetPosition();
+				rotationStepper.resetPosition();
+				break;
+				
 			case 300: // Servo Position
 				if (getValue('S', command, &value)) {
 					servoEnabled = true;
