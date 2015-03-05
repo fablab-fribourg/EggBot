@@ -28,7 +28,7 @@ import org.springframework.stereotype.Controller;
 public class ControlController implements Initializable {
 	
 	@Autowired
-	private GcodeService GcodeService;
+	private GcodeService gcodeService;
 	
 	@FXML
 	private LinearControlController servoController;
@@ -50,8 +50,8 @@ public class ControlController implements Initializable {
 		changeThread.start();
 		
 		servoController.init("Servo", 0, 90);
-		xController.init("X", -30, 30);
-		yController.init("Y", -30, 30);
+		xController.init("X", -40, 40);
+		yController.init("Y", -100, 100);
 		
 		servoController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.PEN, newValue.doubleValue());
@@ -67,7 +67,13 @@ public class ControlController implements Initializable {
 			changedValue.put(Motor.Y, newValue.doubleValue());
 			semNewValue.release();
 		});
+		
+//		servoController.getValueProperty().bind(gcodeService.getCurrentPositionServo());
+//		xController.getValueProperty().bind(gcodeService.getCurrentPositionX());
+//		yController.getValueProperty().bind(gcodeService.getCurrentPositionY());
 	}
+	
+	
 	
 	public class ChangeThread extends Thread{
 		
@@ -79,7 +85,7 @@ public class ControlController implements Initializable {
 					while(!changedValue.isEmpty()){
 						for(Motor m : Motor.values()){
 							Optional.ofNullable(changedValue.remove(m))
-									.ifPresent(v -> GcodeService.move(m, v));
+									.ifPresent(v -> gcodeService.move(m, v));
 						}
 					}
 					

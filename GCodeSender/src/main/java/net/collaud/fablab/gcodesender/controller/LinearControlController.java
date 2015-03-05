@@ -1,6 +1,8 @@
 package net.collaud.fablab.gcodesender.controller;
 
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -14,8 +16,6 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.controller.custom.CustomField;
-import net.collaud.fablab.gcodesender.gcode.GcodeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -29,6 +29,14 @@ import org.springframework.stereotype.Controller;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class LinearControlController implements Initializable {
+	
+	public static final DecimalFormat DECIMAL_FORMAT;
+	static{
+			DecimalFormatSymbols otherSymbols = DecimalFormatSymbols.getInstance();
+			otherSymbols.setDecimalSeparator('.');
+			DECIMAL_FORMAT = new DecimalFormat("#0.000000", otherSymbols);
+			DECIMAL_FORMAT.getDecimalFormatSymbols().setDecimalSeparator('!');
+	}
 
 	@FXML
 	private Label labelTitle;
@@ -56,7 +64,9 @@ public class LinearControlController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		// TODO
+		slider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			labelCurrent.setText(DECIMAL_FORMAT.format(newValue.doubleValue()));
+		});
 	}
 
 	public void init(String title, double sliderMin, double sliderMax) {
@@ -85,5 +95,5 @@ public class LinearControlController implements Initializable {
 	public DoubleProperty getValueProperty(){
 		return slider.valueProperty();
 	}
-
+	
 }

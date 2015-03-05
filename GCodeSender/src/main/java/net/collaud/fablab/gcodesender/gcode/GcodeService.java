@@ -10,7 +10,10 @@ import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import jssc.SerialPortException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.Constants;
 import net.collaud.fablab.gcodesender.config.Config;
@@ -18,6 +21,7 @@ import net.collaud.fablab.gcodesender.config.ConfigKey;
 import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import net.collaud.fablab.gcodesender.tools.Observable;
+import net.collaud.fablab.gcodesender.util.FXUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,15 +35,24 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Autowired
 	private SerialService serialService;
-	
+
 	@Autowired
 	private Config config;
 
-	private Queue<String> lines;
+	private Queue<GcodeCommand> commandQueue;
 
 	private GcodeThread thread;
-	
+
 	private final NumberFormat formatter = new DecimalFormat("#0.0000");
+
+	@Getter
+	private final DoubleProperty currentPositionX = new SimpleDoubleProperty(0);
+
+	@Getter
+	private final DoubleProperty currentPositionY = new SimpleDoubleProperty(0);
+
+	@Getter
+	private final DoubleProperty currentPositionServo = new SimpleDoubleProperty(0);
 
 	public void print(File file, SerialPortDefinition port) {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
@@ -74,24 +87,29 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 		String posStr = formatter.format(position);
 		switch (motor) {
 			case PEN:
-				writeLineAndWaitOk("M300S" + posStr);
+				writeLineAndWaitOk(GcodeCommand.parse("M300S" + posStr).get());
 				break;
 			case X:
-				writeLineAndWaitOk("G00 X" + posStr);
+				writeLineAndWaitOk(GcodeCommand.parse("G00 X" + posStr).get());
 				break;
 			case Y:
-				writeLineAndWaitOk("G00 Y" + posStr);
+				writeLineAndWaitOk(GcodeCommand.parse("G00 Y" + posStr).get());
 				break;
-
 		}
-		
 	}
 
-	private boolean writeLineAndWaitOk(String line) {
-		notifyInfo(line);
+	private void updatePropertiesFromCommand(GcodeCommand cmd) {
+		cmd.x.ifPresent(v -> FXUtils.setInFXThread(currentPositionX, v));
+		cmd.y.ifPresent(v -> FXUtils.setInFXThread(currentPositionY, v));
+		cmd.servo.ifPresent(v -> FXUtils.setInFXThread(currentPositionServo, v));
+	}
+
+	private boolean writeLineAndWaitOk(GcodeCommand line) {
+		updatePropertiesFromCommand(line);
+		notifyInfo(line.toString());
 		try {
 			String rep;
-			serialService.write(line);
+			serialService.write(line.toString());
 			do {
 				rep = serialService.getReadingQueue().take();
 				if (rep != null && !rep.startsWith("ok")) {
@@ -124,12 +142,13 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 			int nbLines = readLines(file);
 			notifyInfo("Gcode loaded, " + nbLines + " lines read");
 			notifyInfo("Opening port " + port);
-			for (String line : lines) {
-				if (!writeLineAndWaitOk(line)) {
+			for (GcodeCommand cmd : commandQueue) {
+				if (!writeLineAndWaitOk(cmd)) {
 					//Something when wrong !
 					break;
 				}
-				if (line.startsWith("M")) {
+				if (cmd.getType() == GcodeCommand.Type.M && cmd.getCode() == 300) {
+					//pen cmd
 					try {
 						Thread.sleep(mCommandWait);
 					} catch (InterruptedException ex) {
@@ -140,24 +159,23 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 		}
 
 		private int readLines(File file) {
-			int count = 0;
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(file));
-				lines = new LinkedList<>();
+				commandQueue = new LinkedList<>();
 				String line;
 				while ((line = br.readLine()) != null) {
-					if (isGcodeLine(line)) {
-						line = InkscapeEggbotConverter.lineConvertLine(line);
-						lines.add(line);
-						count++;
-					}
+					GcodeCommand.parse(line).ifPresent(cmd -> {
+						cmd = GcodeConverter.inkscapeZToServo(cmd);
+						cmd = GcodeConverter.scale(cmd, 1.0);
+						commandQueue.add(cmd);
+					});
 				}
 			} catch (FileNotFoundException ex) {
 				notifyError("File not found", ex);
 			} catch (IOException ex) {
 				notifyError("Cannot read file", ex);
 			}
-			return count;
+			return commandQueue.size();
 		}
 
 		private boolean isGcodeLine(String line) {

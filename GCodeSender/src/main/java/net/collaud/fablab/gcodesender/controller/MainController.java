@@ -1,8 +1,11 @@
 package net.collaud.fablab.gcodesender.controller;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +30,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.gcode.GcodeNotifyMessage;
+import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.serial.PortStatus;
+import static net.collaud.fablab.gcodesender.serial.PortStatus.ERROR;
+import static net.collaud.fablab.gcodesender.serial.PortStatus.NOT_RESPONDING;
+import static net.collaud.fablab.gcodesender.serial.PortStatus.OPEN;
 import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,6 +155,29 @@ public class MainController implements Initializable {
 		gcodeService.stopPrint();
 	}
 
+	@FXML
+	private void linkProject() {
+		goToLink("https://github.com/fablab-fribourg/EggBot");
+	}
+
+	@FXML
+	private void linkGaetan() {
+		goToLink("http://collaud.net");
+	}
+
+	@FXML
+	private void linkFablab() {
+		goToLink("http://fablab-fribourg.ch/");
+	}
+
+	private void goToLink(String url) {
+		try {
+			Desktop.getDesktop().browse(new URI(url));
+		} catch (IOException | URISyntaxException ex) {
+			log.error("Cannot open brower for link " + url, ex);
+		}
+	}
+
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 		//pane port
@@ -196,7 +225,7 @@ public class MainController implements Initializable {
 			sb.append(msg.getMessage());
 			sb.append("</div>");
 			logLines.add(sb.toString());
-			if(logLines.size()>1000){
+			if (logLines.size() > 1000) {
 				logLines.remove(0);
 			}
 			Platform.runLater(() -> {

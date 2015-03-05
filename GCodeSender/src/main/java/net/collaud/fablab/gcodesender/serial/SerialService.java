@@ -20,6 +20,7 @@ import jssc.SerialPortList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.Constants;
+import net.collaud.fablab.gcodesender.util.FXUtils;
 import net.collaud.fablab.gcodesender.config.Config;
 import net.collaud.fablab.gcodesender.config.ConfigKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,18 +62,12 @@ public class SerialService implements Constants {
 
 	public void closePort() {
 		try {
-			setPortStatusInFXThread(PortStatus.CLOSING);
+			FXUtils.setInFXThread(portStatus, PortStatus.CLOSING);
 			openPort.closePort();
-			setPortStatusInFXThread(PortStatus.CLOSED);
+			FXUtils.setInFXThread(portStatus, PortStatus.CLOSED);
 		} catch (SerialPortException ex) {
 			Logger.getLogger(SerialService.class.getName()).log(Level.SEVERE, null, ex);
 		}
-	}
-
-	protected void setPortStatusInFXThread(PortStatus status) {
-		Platform.runLater(() -> {
-			portStatus.set(status);
-		});
 	}
 
 	class PortOpenenr extends Thread {
@@ -98,21 +93,21 @@ public class SerialService implements Constants {
 
 				openPort.addEventListener(new SerialPortReader());
 
-				setPortStatusInFXThread(PortStatus.WAITING_FOR_ARDUINO);
+				FXUtils.setInFXThread(portStatus, PortStatus.WAITING_FOR_ARDUINO);
 
 				String rep;
 				do {
 					rep = readingQueue.poll(arduinoReadyTimeout, TimeUnit.MILLISECONDS);
 				} while (rep != null && !rep.startsWith("ready"));
 				if (rep == null) {
-					setPortStatusInFXThread(PortStatus.NOT_RESPONDING);
+					FXUtils.setInFXThread(portStatus, PortStatus.NOT_RESPONDING);
 				} else {
-					setPortStatusInFXThread(PortStatus.OPEN);
+					FXUtils.setInFXThread(portStatus, PortStatus.OPEN);
 				}
 
 			} catch (InterruptedException | SerialPortException ex) {
 				log.error("Cannot open port", ex);
-				setPortStatusInFXThread(PortStatus.ERROR);
+				FXUtils.setInFXThread(portStatus, PortStatus.ERROR);
 			}
 		}
 	}

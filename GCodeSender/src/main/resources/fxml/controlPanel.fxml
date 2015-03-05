@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<TitledPane collapsible="false" text="Control" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.ControlController">
+   <content>
+      <VBox alignment="CENTER" spacing="5.0">
+         <children>
+			<fx:include fx:id="servo" source="linearControl.fxml" />
+            <Separator />
+			<fx:include source="linearControl.fxml" fx:id="x" />
+            <Separator />
+			<fx:include fx:id="y" source="linearControl.fxml" />
+            <HBox alignment="CENTER" spacing="5.0">
+               <children>
+                  <Button mnemonicParsing="false" text="Release" />
+                  <Button mnemonicParsing="false" text="Go Home" />
+                  <Button mnemonicParsing="false" text="Set Home" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </content>
+</TitledPane>

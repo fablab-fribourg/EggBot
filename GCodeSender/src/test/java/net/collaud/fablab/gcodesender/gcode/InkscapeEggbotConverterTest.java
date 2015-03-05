@@ -22,12 +22,13 @@ public class InkscapeEggbotConverterTest {
 	@Test
 	public void testLineConvertLine() {
 		Map<String, String> map = new HashMap<>();
-		map.put("G00 Z3.000000", "M300S30.0");
-		map.put("G00 Z-0.25", "M300S0.0");
+		map.put("G00 Z3.000000", "M300S30");
+		map.put("G00 Z-0.25", "M300S0");
 
 		for (Map.Entry<String, String> entry : map.entrySet()) {
-			String result = InkscapeEggbotConverter.lineConvertLine(entry.getKey());
-			assertEquals(entry.getValue(), result);
+			GcodeCommand cmd = GcodeCommand.parse(entry.getKey()).get();
+			cmd = GcodeConverter.inkscapeZToServo(cmd);
+			assertEquals(entry.getValue(), cmd.toString());
 		}
 
 	}

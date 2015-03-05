@@ -74,9 +74,18 @@
    <center>
       <VBox>
          <children>
-			<fx:include source="control.fxml" fx:id="controlPane" />
+			<fx:include source="controlPanel.fxml" fx:id="controlPane" />
             <WebView fx:id="htmlLog" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
          </children>
       </VBox>
    </center>
+   <bottom>
+	   <HBox alignment="CENTER_RIGHT">
+		   <Hyperlink text="Open source project" onAction="#linkProject"></Hyperlink>
+		   <Label text="coded by"></Label> 
+		   <Hyperlink text="Gaetan Collaud" onAction="#linkGaetan"></Hyperlink>
+		   <Label text="for"></Label> 
+		   <Hyperlink text="Fablab-Fribourg, CH" onAction="#linkFablab"></Hyperlink>
+	   </HBox>
+   </bottom>
 </BorderPane>
