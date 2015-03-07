@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -182,12 +184,16 @@ public class MainController implements Initializable {
 	public void initialize(URL url, ResourceBundle rb) {
 		//pane port
 		final ObjectProperty<PortStatus> portStatus = serialService.getPortStatus();
+		final BooleanBinding condOpenPort = portStatus.isEqualTo(PortStatus.OPEN)
+				.or(portStatus.isEqualTo(PortStatus.OPENNING))
+				.or(portStatus.isEqualTo(PortStatus.WAITING_FOR_ARDUINO))
+				.or(portStatus.isEqualTo(PortStatus.CLOSING));
 		selectedPort = comboPort.valueProperty();
 		panePort.disableProperty().bind(printing);
-		comboPort.disableProperty().bind(portStatus.isNotEqualTo(PortStatus.CLOSED));
-		buttonOpenPort.disableProperty().bind(selectedPort.isNull().or(portStatus.isNotEqualTo(PortStatus.CLOSED)));
+		comboPort.disableProperty().bind(condOpenPort);
+		buttonOpenPort.disableProperty().bind(selectedPort.isNull().or(condOpenPort));
 		buttonClosePort.disableProperty().bind(portStatus.isNotEqualTo(PortStatus.OPEN));
-		buttonReloadPort.disableProperty().bind(portStatus.isNotEqualTo(PortStatus.CLOSED));
+		buttonReloadPort.disableProperty().bind(condOpenPort);
 		labelPortStatus.textProperty().bind(portStatus.asString());
 		portStatus.addListener((ObservableValue<? extends PortStatus> observable, PortStatus oldValue, PortStatus newValue) -> {
 			labelPortStatus.setTooltip(new Tooltip(newValue.getDetail()));

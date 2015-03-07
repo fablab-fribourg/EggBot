@@ -1,7 +1,5 @@
 package net.collaud.fablab.gcodesender.gcode;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.AbstractMap;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -9,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.collaud.fablab.gcodesender.util.GcodeValueParser;
 
 /**
  *
@@ -123,13 +122,8 @@ public class GcodeCommand {
 			}
 			sb.append(code);
 
-			DecimalFormatSymbols otherSymbols = DecimalFormatSymbols.getInstance();
-			otherSymbols.setDecimalSeparator('.');
-			DecimalFormat formatter = new DecimalFormat("#0.000000", otherSymbols);
-			formatter.getDecimalFormatSymbols().setDecimalSeparator('!');
-
 			Consumer<AbstractMap.SimpleEntry<String, Double>> printValue = (AbstractMap.SimpleEntry<String, Double> t)
-					-> sb.append(" ").append(t.getKey()).append(formatter.format(t.getValue()));
+					-> sb.append(" ").append(t.getKey()).append(GcodeValueParser.format(t.getValue()));
 
 			x.map(v -> new AbstractMap.SimpleEntry<String, Double>("X", v)).ifPresent(printValue);
 			y.map(v -> new AbstractMap.SimpleEntry<String, Double>("Y", v)).ifPresent(printValue);

@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
@@ -22,6 +20,7 @@ import net.collaud.fablab.gcodesender.serial.SerialPortDefinition;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import net.collaud.fablab.gcodesender.tools.Observable;
 import net.collaud.fablab.gcodesender.util.FXUtils;
+import net.collaud.fablab.gcodesender.util.GcodeValueParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +41,6 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 	private Queue<GcodeCommand> commandQueue;
 
 	private GcodeThread thread;
-
-	private final NumberFormat formatter = new DecimalFormat("#0.0000");
 
 	@Getter
 	private final DoubleProperty currentPositionX = new SimpleDoubleProperty(0);
@@ -83,8 +80,22 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 		notifyError("Print cancelled !");
 	}
 
+	public void release() {
+		writeLineAndWaitOk(GcodeCommand.parse("M18").get());
+	}
+
+	public void setHome() {
+		writeLineAndWaitOk(GcodeCommand.parse("M19").get());
+	}
+
+	public void goHome(double servoPos) {
+		String servoStr = GcodeValueParser.format(servoPos);
+		writeLineAndWaitOk(GcodeCommand.parse("M300S" + servoStr).get());
+		writeLineAndWaitOk(GcodeCommand.parse("G00 X0.0000 Y0.0000").get());
+	}
+
 	public void move(Motor motor, double position) {
-		String posStr = formatter.format(position);
+		String posStr = GcodeValueParser.format(position);
 		switch (motor) {
 			case PEN:
 				writeLineAndWaitOk(GcodeCommand.parse("M300S" + posStr).get());

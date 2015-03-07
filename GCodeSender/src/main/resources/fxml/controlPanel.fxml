@@ -18,9 +18,9 @@
 			<fx:include fx:id="y" source="linearControl.fxml" />
             <HBox alignment="CENTER" spacing="5.0">
                <children>
-                  <Button mnemonicParsing="false" text="Release" />
-                  <Button mnemonicParsing="false" text="Go Home" />
-                  <Button mnemonicParsing="false" text="Set Home" />
+                  <Button mnemonicParsing="false" text="Release" onAction="#actionRelease"  />
+                  <Button mnemonicParsing="false" text="Go Home" onAction="#actionGoHome"  />
+                  <Button mnemonicParsing="false" text="Set Home" onAction="#actionSetHome"  />
                </children>
             </HBox>
          </children>

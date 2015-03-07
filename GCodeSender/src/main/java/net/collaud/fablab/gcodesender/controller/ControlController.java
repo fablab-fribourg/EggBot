@@ -26,75 +26,88 @@ import org.springframework.stereotype.Controller;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class ControlController implements Initializable {
-	
+
 	@Autowired
 	private GcodeService gcodeService;
-	
+
 	@FXML
 	private LinearControlController servoController;
-	
+
 	@FXML
 	private LinearControlController xController;
-	
+
 	@FXML
 	private LinearControlController yController;
-	
+
 	private final Semaphore semNewValue = new Semaphore(0);
 	private final Map<Motor, Double> changedValue = new ConcurrentHashMap<>();
-	
+
 	private ChangeThread changeThread;
-	
+
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 		changeThread = new ChangeThread();
 		changeThread.start();
-		
+
 		servoController.init("Servo", 0, 90);
 		xController.init("X", -40, 40);
 		yController.init("Y", -100, 100);
-		
+
 		servoController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.PEN, newValue.doubleValue());
 			semNewValue.release();
 		});
-		
+
 		xController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.X, newValue.doubleValue());
 			semNewValue.release();
 		});
-		
+
 		yController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.Y, newValue.doubleValue());
 			semNewValue.release();
 		});
-		
+
 //		servoController.getValueProperty().bind(gcodeService.getCurrentPositionServo());
 //		xController.getValueProperty().bind(gcodeService.getCurrentPositionX());
 //		yController.getValueProperty().bind(gcodeService.getCurrentPositionY());
 	}
-	
-	
-	
-	public class ChangeThread extends Thread{
-		
+
+	@FXML
+	private void actionRelease() {
+		new Thread(gcodeService::release).start();
+	}
+
+	@FXML
+	private void actionGoHome() {
+		new Thread(() -> gcodeService.goHome(servoController.getMax().get())).start();
+	}
+
+	@FXML
+	private void actionSetHome() {
+		new Thread(gcodeService::setHome).start();
+	}
+
+	public class ChangeThread extends Thread {
+
 		@Override
-		public void run(){
-			while(true){
+		public void run() {
+			while (true) {
 				try {
 					semNewValue.acquire();
-					while(!changedValue.isEmpty()){
-						for(Motor m : Motor.values()){
+					while (!changedValue.isEmpty()) {
+						for (Motor m : Motor.values()) {
 							Optional.ofNullable(changedValue.remove(m))
 									.ifPresent(v -> gcodeService.move(m, v));
 						}
 					}
-					
+
 				} catch (InterruptedException ex) {
 					log.error("Interrupted", ex);
 				}
 			}
 		}
-		
+
 	}
-	
+
 }

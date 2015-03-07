@@ -1,12 +1,9 @@
 package net.collaud.fablab.gcodesender.controller;
 
 import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,8 +11,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.controller.custom.CustomField;
+import net.collaud.fablab.gcodesender.util.GcodeValueParser;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -29,14 +28,6 @@ import org.springframework.stereotype.Controller;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class LinearControlController implements Initializable {
-	
-	public static final DecimalFormat DECIMAL_FORMAT;
-	static{
-			DecimalFormatSymbols otherSymbols = DecimalFormatSymbols.getInstance();
-			otherSymbols.setDecimalSeparator('.');
-			DECIMAL_FORMAT = new DecimalFormat("#0.000000", otherSymbols);
-			DECIMAL_FORMAT.getDecimalFormatSymbols().setDecimalSeparator('!');
-	}
 
 	@FXML
 	private Label labelTitle;
@@ -59,13 +50,15 @@ public class LinearControlController implements Initializable {
 	@FXML
 	private TextField textMax;
 
+	@Getter
 	private final DoubleProperty min = new SimpleDoubleProperty();
+	@Getter
 	private final DoubleProperty max = new SimpleDoubleProperty();
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 		slider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-			labelCurrent.setText(DECIMAL_FORMAT.format(newValue.doubleValue()));
+			labelCurrent.setText(GcodeValueParser.format(newValue.doubleValue()));
 		});
 	}
 
@@ -77,23 +70,23 @@ public class LinearControlController implements Initializable {
 
 		slider.minProperty().bind(min);
 		slider.maxProperty().bind(max);
-		
+
 		CustomField.numberField(min, textMin);
 		CustomField.numberField(max, textMax);
 	}
-	
+
 	@FXML
-	private void setCurrentToMin(){
+	private void setCurrentToMin() {
 		min.set(slider.getValue());
 	}
-	
+
 	@FXML
-	private void setCurrentToMax(){
+	private void setCurrentToMax() {
 		max.set(slider.getValue());
 	}
-	
-	public DoubleProperty getValueProperty(){
+
+	public DoubleProperty getValueProperty() {
 		return slider.valueProperty();
 	}
-	
+
 }
