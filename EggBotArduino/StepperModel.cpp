@@ -116,14 +116,15 @@ void StepperModel::enableStepper(bool enabled) {
 }
 
 void StepperModel::resetStepper() {
-	enableStepper(false);
 	this->resetPosition();
+	enableStepper(false);
 }
 
 void StepperModel::resetPosition() {
 	currentStepcount = 0;
 	targetStepcount = 0;
 	delta = 0;
+	enableStepper(true);
 }
 
 void StepperModel::doStep(long intervals) {
