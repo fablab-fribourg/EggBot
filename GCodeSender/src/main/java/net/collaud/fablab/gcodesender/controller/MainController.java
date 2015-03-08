@@ -17,6 +17,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -32,6 +33,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.collaud.fablab.gcodesender.config.Config;
+import net.collaud.fablab.gcodesender.config.ConfigKey;
 import net.collaud.fablab.gcodesender.gcode.GcodeNotifyMessage;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.serial.PortStatus;
@@ -56,6 +59,9 @@ public class MainController implements Initializable {
 
 	@Autowired
 	private GcodeService gcodeService;
+
+	@Autowired
+	private Config config;
 
 	@Setter
 	private Stage stage;
@@ -107,8 +113,19 @@ public class MainController implements Initializable {
 
 	@FXML
 	private void reloadPorts() {
-		comboPort.setItems(FXCollections.observableArrayList(serialService.getListPorts()));
-		selectedPort.setValue(null);
+		final List<SerialPortDefinition> list = serialService.getListPorts();
+		comboPort.setItems(FXCollections.observableArrayList(list));
+		Optional<String> last = Optional.ofNullable(config.getProperty(ConfigKey.LAST_PORT));
+		SerialPortDefinition value = null;
+		if (last.isPresent()) {
+			final Optional<SerialPortDefinition> find = list.stream()
+					.filter(e -> e.getName().equals(last.get()))
+					.findFirst();
+			if (find.isPresent()) {
+				value = find.get();
+			}
+		}
+		selectedPort.setValue(value);
 	}
 
 	@FXML
@@ -130,11 +147,7 @@ public class MainController implements Initializable {
 		fileChooser.setTitle("Open GCode file");
 		addGCodeExtensionFilter(fileChooser);
 		File f = fileChooser.showOpenDialog(stage);
-		if (f != null) {
-			lastDirectory = f.getParentFile();
-			selectedFile.setValue(f);
-			log.info("File selected : " + selectedFile.getValue());
-		}
+		selectedFile.setValue(f);
 	}
 
 	private void addGCodeExtensionFilter(FileChooser fileChooser) {
@@ -210,10 +223,19 @@ public class MainController implements Initializable {
 			}
 		});
 
+		selectedPort.addListener((ObservableValue<? extends SerialPortDefinition> observable, SerialPortDefinition oldValue, SerialPortDefinition newValue) -> {
+			config.setProperty(ConfigKey.LAST_PORT, newValue != null ? newValue.getName() : null);
+		});
+
 		//pane file
 		paneFile.disableProperty().bind(printing);
 		selectedFile.addListener((ObservableValue<? extends File> observable, File oldValue, File newValue) -> {
 			labelFile.setText(Optional.ofNullable(newValue).map(f -> f.getName()).orElse("No file selected yet !"));
+			config.setProperty(ConfigKey.LAST_FILE, newValue != null ? newValue.getAbsolutePath() : null);
+			if (newValue != null) {
+				lastDirectory = newValue.getParentFile();
+				log.info("File selected : " + selectedFile.getValue());
+			}
 		});
 
 		//Pane pring
@@ -245,12 +267,9 @@ public class MainController implements Initializable {
 		//Pane control
 		controlPane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
 
+		//Init values
 		reloadPorts();
-
-		//Fixme test
-//		selectedFile = Optional.of(new File("C:\\Users\\gaetan\\Documents\\output_0014.gcode"));
-//		selectedPort = Optional.of(new SerialPortDefinition("COM8"));
-//		updateButtonPrint();
+		config.getOptionalProperty(ConfigKey.LAST_FILE).ifPresent(p -> selectedFile.set(new File(p)));
 	}
 
 	private void updateLog() {

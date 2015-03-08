@@ -9,7 +9,9 @@ import lombok.Getter;
 public enum ConfigKey {
 
 	ARDUINO_READY_TIMEOUT_MS("arduinoReadyTimeout", "5000"),
-	M_COMMAND_WAIT("mCommandWait", "300");
+	M_COMMAND_WAIT("mCommandWait", "300"),
+	LAST_PORT("last.port", null),
+	LAST_FILE("last.file", null);
 
 	@Getter
 	private final String name;
