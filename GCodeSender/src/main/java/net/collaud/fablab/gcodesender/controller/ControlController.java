@@ -9,6 +9,7 @@ import java.util.concurrent.Semaphore;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.gcode.Motor;
@@ -33,9 +34,11 @@ public class ControlController implements Initializable {
 	@FXML
 	private LinearControlController servoController;
 
+	@Getter
 	@FXML
 	private LinearControlController xController;
 
+	@Getter
 	@FXML
 	private LinearControlController yController;
 

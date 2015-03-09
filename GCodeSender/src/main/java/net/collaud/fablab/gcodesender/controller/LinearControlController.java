@@ -52,6 +52,7 @@ public class LinearControlController implements Initializable {
 
 	@Getter
 	private final DoubleProperty min = new SimpleDoubleProperty();
+	
 	@Getter
 	private final DoubleProperty max = new SimpleDoubleProperty();
 

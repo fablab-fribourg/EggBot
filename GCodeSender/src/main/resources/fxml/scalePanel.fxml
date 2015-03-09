@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox stylesheets="@../styles/Styles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.ScalePanelController">
+	<children>
+		<HBox alignment="CENTER" spacing="5.0" styleClass="scale">
+			<children>
+				<Label text="Scale" />
+				<TextField fx:id="textScale" prefWidth="50.0" text="1.0" />
+			</children>
+		</HBox>
+		<GridPane alignment="CENTER" layoutX="118.0" layoutY="104.0" styleClass="scaleGrid">
+			<columnConstraints>
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+			</rowConstraints>
+			<children>
+				<Label text="in mm" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+				<Label text="Limit" GridPane.rowIndex="1" />
+				<Label text="Found in file" GridPane.rowIndex="2" />
+				<Label text="File after scale" GridPane.rowIndex="3" />
+				<Label text="X min" GridPane.columnIndex="1" />
+				<Label text="X max" GridPane.columnIndex="2" />
+				<Label text="Y min" GridPane.columnIndex="3" />
+				<Label text="Y max" GridPane.columnIndex="4" />
+				<Label GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="xMinUser" />
+				<Label GridPane.columnIndex="2" GridPane.rowIndex="1" fx:id="xMaxUser" />
+				<Label fx:id="yMinUser" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+				<Label fx:id="yMaxUser" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+				<Label GridPane.columnIndex="1" GridPane.rowIndex="2" fx:id="xMinFile" />
+				<Label GridPane.columnIndex="2" GridPane.rowIndex="2" fx:id="xMaxFile" />
+				<Label fx:id="yMinFile" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+				<Label fx:id="yMaxFile" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+				<Label GridPane.columnIndex="1" GridPane.rowIndex="3" fx:id="xMinScale" />
+				<Label GridPane.columnIndex="2" GridPane.rowIndex="3" fx:id="xMaxScale" />
+				<Label fx:id="yMinScale" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+				<Label fx:id="yMaxScale" GridPane.columnIndex="4" GridPane.rowIndex="3" />
+			</children>
+		</GridPane>
+	</children>
+</VBox>

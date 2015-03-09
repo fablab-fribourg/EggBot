@@ -1,3 +1,11 @@
-.button {
-    -fx-font-weight: bold;
+
+HBox.scale{
+	-fx-padding: 5px;
+}
+
+.scaleGrid{
+	-fx-grid-lines-visible: true;
+}
+.scaleGrid Label{
+	-fx-padding: 10px;
 }

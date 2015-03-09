@@ -35,6 +35,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.config.Config;
 import net.collaud.fablab.gcodesender.config.ConfigKey;
+import net.collaud.fablab.gcodesender.gcode.GcodeFileService;
+import net.collaud.fablab.gcodesender.gcode.GcodeFileStatus;
 import net.collaud.fablab.gcodesender.gcode.GcodeNotifyMessage;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.serial.PortStatus;
@@ -58,6 +60,9 @@ public class MainController implements Initializable {
 	private SerialService serialService;
 
 	@Autowired
+	private GcodeFileService gcodeFileService;
+
+	@Autowired
 	private GcodeService gcodeService;
 
 	@Autowired
@@ -68,6 +73,9 @@ public class MainController implements Initializable {
 
 	@FXML
 	private Label labelFile;
+
+	@FXML
+	private Label labelFileStatus;
 
 	@FXML
 	private Button buttonReloadPort;
@@ -104,6 +112,13 @@ public class MainController implements Initializable {
 
 	@FXML
 	private TitledPane controlPane;
+	
+	
+	@FXML
+	private ControlController controlPaneController;
+	
+	@FXML
+	private ControlController scalePaneController;
 
 	private final ObjectProperty<File> selectedFile = new SimpleObjectProperty<>();
 	private final List<String> logLines = new LinkedList<>();
@@ -148,6 +163,7 @@ public class MainController implements Initializable {
 		addGCodeExtensionFilter(fileChooser);
 		File f = fileChooser.showOpenDialog(stage);
 		selectedFile.setValue(f);
+		gcodeFileService.analyseFile(f);
 	}
 
 	private void addGCodeExtensionFilter(FileChooser fileChooser) {
@@ -229,6 +245,23 @@ public class MainController implements Initializable {
 
 		//pane file
 		paneFile.disableProperty().bind(printing);
+		final ObjectProperty<GcodeFileStatus> fileStatus = gcodeFileService.getFileStatus();
+		labelFileStatus.textProperty().bind(fileStatus.asString());
+		fileStatus.addListener((ObservableValue<? extends GcodeFileStatus> observable, GcodeFileStatus oldValue, GcodeFileStatus newValue) -> {
+			switch (newValue) {
+				case COMPLETE:
+					labelFileStatus.setTextFill(Color.GREEN);
+					break;
+				case ERROR:
+					labelFileStatus.setTextFill(Color.RED);
+					break;
+				case READING:
+					labelFileStatus.setTextFill(Color.ORANGE);
+					break;
+				default:
+					labelFileStatus.setTextFill(Color.BLACK);
+			}
+		});
 		selectedFile.addListener((ObservableValue<? extends File> observable, File oldValue, File newValue) -> {
 			labelFile.setText(Optional.ofNullable(newValue).map(f -> f.getName()).orElse("No file selected yet !"));
 			config.setProperty(ConfigKey.LAST_FILE, newValue != null ? newValue.getAbsolutePath() : null);
@@ -239,7 +272,7 @@ public class MainController implements Initializable {
 		});
 
 		//Pane pring
-		panePrint.disableProperty().bind(selectedFile.isNull().or(portStatus.isNotEqualTo(PortStatus.OPEN)));
+		panePrint.disableProperty().bind(fileStatus.isNotEqualTo(GcodeFileStatus.COMPLETE).or(portStatus.isNotEqualTo(PortStatus.OPEN)));
 		buttonPrintStart.disableProperty().bind(printing);
 		buttonPrintStop.disableProperty().bind(printing.not());
 
@@ -269,7 +302,12 @@ public class MainController implements Initializable {
 
 		//Init values
 		reloadPorts();
-		config.getOptionalProperty(ConfigKey.LAST_FILE).ifPresent(p -> selectedFile.set(new File(p)));
+		config.getOptionalProperty(ConfigKey.LAST_FILE).ifPresent(p -> {
+			File f = new File(p);
+			selectedFile.set(f);
+			gcodeFileService.analyseFile(f);
+		});
+
 	}
 
 	private void updateLog() {

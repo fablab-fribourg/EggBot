@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import javafx.beans.property.DoubleProperty;
@@ -34,11 +35,12 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Autowired
 	private SerialService serialService;
+	
+	@Autowired
+	private GcodeFileService fileService;
 
 	@Autowired
 	private Config config;
-
-	private Queue<GcodeCommand> commandQueue;
 
 	private GcodeThread thread;
 
@@ -50,7 +52,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Getter
 	private final DoubleProperty currentPositionServo = new SimpleDoubleProperty(0);
-
+	
 	public void print(File file, SerialPortDefinition port) {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
 		thread = new GcodeThread(file, port);
@@ -149,11 +151,8 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 		@Override
 		public void run() {
-			notifyInfo("Loading GCode from " + file.getAbsolutePath());
-			int nbLines = readLines(file);
-			notifyInfo("Gcode loaded, " + nbLines + " lines read");
-			notifyInfo("Opening port " + port);
-			for (GcodeCommand cmd : commandQueue) {
+			List<GcodeCommand> commands = fileService.getGcodeFile().get().getCommands();
+			for (GcodeCommand cmd : commands) {
 				if (!writeLineAndWaitOk(cmd)) {
 					//Something when wrong !
 					break;
@@ -169,28 +168,5 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 			notifyObservers(new GcodeNotifyMessage(GcodeNotifyMessage.Type.INFO, "% End of print", true));
 		}
 
-		private int readLines(File file) {
-			try {
-				BufferedReader br = new BufferedReader(new FileReader(file));
-				commandQueue = new LinkedList<>();
-				String line;
-				while ((line = br.readLine()) != null) {
-					GcodeCommand.parse(line).ifPresent(cmd -> {
-						cmd = GcodeConverter.inkscapeZToServo(cmd);
-						cmd = GcodeConverter.scale(cmd, 1.0);
-						commandQueue.add(cmd);
-					});
-				}
-			} catch (FileNotFoundException ex) {
-				notifyError("File not found", ex);
-			} catch (IOException ex) {
-				notifyError("Cannot read file", ex);
-			}
-			return commandQueue.size();
-		}
-
-		private boolean isGcodeLine(String line) {
-			return line.startsWith("G") || line.startsWith("M");
-		}
 	}
 }
