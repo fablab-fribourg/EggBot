@@ -53,9 +53,9 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 	@Getter
 	private final DoubleProperty currentPositionServo = new SimpleDoubleProperty(0);
 	
-	public void print(File file, SerialPortDefinition port) {
+	public void print(double scale) {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
-		thread = new GcodeThread(file, port);
+		thread = new GcodeThread(scale);
 		thread.start();
 	}
 
@@ -138,14 +138,13 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	class GcodeThread extends Thread {
 
-		private final File file;
-		private final SerialPortDefinition port;
 		private final int mCommandWait;
+		
+		private double scale;
 
-		public GcodeThread(File file, SerialPortDefinition port) {
-			super("Gcode thread : " + file.getAbsolutePath());
-			this.file = file;
-			this.port = port;
+		public GcodeThread(double scale) {
+			super("Gcode sender thread");
+			this.scale = scale;
 			mCommandWait = config.getIntProperty(ConfigKey.M_COMMAND_WAIT);
 		}
 
@@ -153,6 +152,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 		public void run() {
 			List<GcodeCommand> commands = fileService.getGcodeFile().get().getCommands();
 			for (GcodeCommand cmd : commands) {
+				cmd = cmd.scale(scale);
 				if (!writeLineAndWaitOk(cmd)) {
 					//Something when wrong !
 					break;

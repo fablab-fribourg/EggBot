@@ -134,5 +134,20 @@ public class GcodeCommand {
 		}
 		return sb.toString();
 	}
+	
+	public GcodeCommand scale(double factor){
+		GcodeCommand cmd = new GcodeCommand();
+		cmd.setCode(getCode());
+		cmd.setFeed(getFeed());
+		cmd.setServo(getServo());
+		cmd.setType(getType());
+		getX().ifPresent(v -> cmd.setX(Optional.of(v * factor)));
+		getY().ifPresent(v -> cmd.setY(Optional.of(v * factor)));
+		getZ().ifPresent(v -> cmd.setZ(Optional.of(v * factor)));
+		getI().ifPresent(v -> cmd.setI(Optional.of(v * factor)));
+		getJ().ifPresent(v -> cmd.setJ(Optional.of(v * factor)));
+		return cmd;
+		
+	}
 
 }

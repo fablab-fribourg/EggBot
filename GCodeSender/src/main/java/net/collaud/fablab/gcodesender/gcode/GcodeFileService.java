@@ -64,7 +64,6 @@ public class GcodeFileService {
 				while ((line = br.readLine()) != null) {
 					GcodeCommand.parse(line).ifPresent(cmd -> {
 						cmd = GcodeConverter.inkscapeZToServo(cmd);
-						cmd = GcodeConverter.scale(cmd, 1.0);
 						commands.add(cmd);
 					});
 				}

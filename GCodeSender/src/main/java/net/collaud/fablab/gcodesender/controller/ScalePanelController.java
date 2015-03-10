@@ -68,7 +68,7 @@ public class ScalePanelController implements Initializable {
 	private TextField textScale;
 
 	@Getter
-	private final DoubleProperty scalevalue = new SimpleDoubleProperty();
+	private final DoubleProperty scaleValue = new SimpleDoubleProperty(1.0);
 
 	@Getter
 	private final ObjectProperty<Limits> limitUser = new SimpleObjectProperty<>();
@@ -84,7 +84,7 @@ public class ScalePanelController implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		CustomField.numberField(scalevalue, textScale);
+		CustomField.numberField(scaleValue, textScale);
 	}
 
 }

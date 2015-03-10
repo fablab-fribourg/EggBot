@@ -9,13 +9,13 @@ import java.util.Optional;
 public class GcodeConverter {
 
 	public static GcodeCommand inkscapeZToServo(GcodeCommand cmd) {
-		if(cmd.getType()==GcodeCommand.Type.G 
+		if (cmd.getType() == GcodeCommand.Type.G
 				&& cmd.getZ().isPresent()
-				&& !cmd.getX().isPresent() 
-				&& !cmd.getY().isPresent()){
-			double z = cmd.getZ().get()*10;
-			if(z<0){
-				z=0;
+				&& !cmd.getX().isPresent()
+				&& !cmd.getY().isPresent()) {
+			double z = cmd.getZ().get() * 10;
+			if (z < 0) {
+				z = 0;
 			}
 			cmd = new GcodeCommand();
 			cmd.setType(GcodeCommand.Type.M);
@@ -24,8 +24,5 @@ public class GcodeConverter {
 		}
 		return cmd;
 	}
-	
-	public static GcodeCommand scale(GcodeCommand cmd, double scaleFactor){
-		return cmd;
-	}
+
 }

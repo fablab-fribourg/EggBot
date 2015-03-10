@@ -118,7 +118,7 @@ public class MainController implements Initializable {
 	private ControlController controlPaneController;
 	
 	@FXML
-	private ControlController scalePaneController;
+	private ScalePanelController scalePaneController;
 
 	private final ObjectProperty<File> selectedFile = new SimpleObjectProperty<>();
 	private final List<String> logLines = new LinkedList<>();
@@ -156,7 +156,7 @@ public class MainController implements Initializable {
 	@FXML
 	private void chooseGCodeFile() {
 		FileChooser fileChooser = new FileChooser();
-		if (lastDirectory != null) {
+		if (lastDirectory != null && lastDirectory.exists()) {
 			fileChooser.setInitialDirectory(lastDirectory);
 		}
 		fileChooser.setTitle("Open GCode file");
@@ -174,7 +174,7 @@ public class MainController implements Initializable {
 	@FXML
 	private void print() {
 		log.info("Print file {} on port {}", selectedFile.get().getAbsolutePath(), selectedPort.get());
-		gcodeService.print(selectedFile.get(), selectedPort.get());
+		gcodeService.print(scalePaneController.getScaleValue().doubleValue());
 		logLines.clear();
 		printing.set(true);
 	}

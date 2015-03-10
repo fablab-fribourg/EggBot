@@ -73,7 +73,7 @@ volatile long intervals_remaining = 0;
 volatile boolean isRunning = false;
 
 // comm variables
-const int MAX_CMD_SIZE = 256;
+const int MAX_CMD_SIZE = 296;
 char buffer[MAX_CMD_SIZE]; // buffer for serial commands
 char serial_char; // value for each byte read in from serial comms
 int serial_count = 0; // current length of command
