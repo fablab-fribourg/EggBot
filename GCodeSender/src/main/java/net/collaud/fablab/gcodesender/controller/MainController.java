@@ -299,6 +299,9 @@ public class MainController implements Initializable {
 
 		//Pane control
 		controlPane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
+		
+		//Pane scale
+		scalePaneController.init(controlPaneController.getLimits(), gcodeFileService.getLimits());
 
 		//Init values
 		reloadPorts();

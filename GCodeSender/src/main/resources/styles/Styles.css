@@ -7,5 +7,8 @@ HBox.scale{
 	-fx-grid-lines-visible: true;
 }
 .scaleGrid Label{
-	-fx-padding: 10px;
+	-fx-padding: 10;
+}
+.scaleGrid Label.error {
+	-fx-text-fill:red;
 }

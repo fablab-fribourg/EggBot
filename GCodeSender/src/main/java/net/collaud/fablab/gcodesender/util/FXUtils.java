@@ -24,6 +24,10 @@ public class FXUtils {
 		});
 	}
 	
+	public void runInFXThread(Runnable runable){
+		Platform.runLater(runable);
+	}
+	
 //	public void setInFXThread(DoubleProperty property, double value){
 //		Platform.runLater(() -> {
 //			property.set(value);

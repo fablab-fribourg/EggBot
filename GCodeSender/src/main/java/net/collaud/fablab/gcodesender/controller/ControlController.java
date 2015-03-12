@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.collaud.fablab.gcodesender.controller.model.LimitsProperty;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.gcode.Motor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,8 @@ public class ControlController implements Initializable {
 	private final Map<Motor, Double> changedValue = new ConcurrentHashMap<>();
 
 	private ChangeThread changeThread;
+	
+	private LimitsProperty limits;
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
@@ -70,6 +73,8 @@ public class ControlController implements Initializable {
 			changedValue.put(Motor.Y, newValue.doubleValue());
 			semNewValue.release();
 		});
+		
+		limits = new LimitsProperty(xController.getMin(), xController.getMax(), yController.getMin(), yController.getMax());
 
 //		servoController.getValueProperty().bind(gcodeService.getCurrentPositionServo());
 //		xController.getValueProperty().bind(gcodeService.getCurrentPositionX());
@@ -110,7 +115,10 @@ public class ControlController implements Initializable {
 				}
 			}
 		}
-
+	}
+	
+	public LimitsProperty getLimits(){
+		return limits;
 	}
 
 }
