@@ -35,7 +35,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Autowired
 	private SerialService serialService;
-	
+
 	@Autowired
 	private GcodeFileService fileService;
 
@@ -52,7 +52,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Getter
 	private final DoubleProperty currentPositionServo = new SimpleDoubleProperty(0);
-	
+
 	public void print(double scale) {
 		Optional.ofNullable(thread).ifPresent(t -> t.interrupt());
 		thread = new GcodeThread(scale);
@@ -122,13 +122,14 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 		notifyInfo(line.toString());
 		try {
 			String rep;
-			serialService.write(line.toString());
-			do {
-				rep = serialService.getReadingQueue().take();
-				if (rep != null && !rep.startsWith("ok")) {
-					notifyError("Wrong message received : " + rep);
-				}
-			} while (rep != null && !rep.startsWith("ok"));
+			if (serialService.write(line.toString())) {
+				do {
+					rep = serialService.getReadingQueue().take();
+					if (rep != null && !rep.startsWith("ok")) {
+						notifyError("Wrong message received : " + rep);
+					}
+				} while (rep != null && !rep.startsWith("ok"));
+			}
 		} catch (SerialPortException | InterruptedException ex) {
 			notifyError("Error while writing gcode line : " + line, ex);
 			return false;
@@ -139,7 +140,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 	class GcodeThread extends Thread {
 
 		private final int mCommandWait;
-		
+
 		private double scale;
 
 		public GcodeThread(double scale) {

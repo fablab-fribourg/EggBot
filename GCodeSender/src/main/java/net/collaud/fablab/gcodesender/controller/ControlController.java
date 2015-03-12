@@ -6,11 +6,15 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.collaud.fablab.gcodesender.config.Config;
+import net.collaud.fablab.gcodesender.config.ConfigKey;
 import net.collaud.fablab.gcodesender.controller.model.LimitsProperty;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.gcode.Motor;
@@ -31,6 +35,9 @@ public class ControlController implements Initializable {
 
 	@Autowired
 	private GcodeService gcodeService;
+	
+	@Autowired
+	private Config config;
 
 	@FXML
 	private LinearControlController servoController;
@@ -54,10 +61,10 @@ public class ControlController implements Initializable {
 	public void initialize(URL url, ResourceBundle rb) {
 		changeThread = new ChangeThread();
 		changeThread.start();
-
-		servoController.init("Servo", 0, 90);
-		xController.init("X", -40, 40);
-		yController.init("Y", -100, 100);
+		
+		servoController.init("Servo", config.getDoubleProperty(ConfigKey.LAST_SERVO_MIN), config.getDoubleProperty(ConfigKey.LAST_SERVO_MAX));
+		xController.init("X", config.getDoubleProperty(ConfigKey.LAST_X_MIN), config.getDoubleProperty(ConfigKey.LAST_X_MAX));
+		yController.init("Y", config.getDoubleProperty(ConfigKey.LAST_Y_MIN), config.getDoubleProperty(ConfigKey.LAST_Y_MAX));
 
 		servoController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.PEN, newValue.doubleValue());
@@ -76,9 +83,24 @@ public class ControlController implements Initializable {
 		
 		limits = new LimitsProperty(xController.getMin(), xController.getMax(), yController.getMin(), yController.getMax());
 
-//		servoController.getValueProperty().bind(gcodeService.getCurrentPositionServo());
-//		xController.getValueProperty().bind(gcodeService.getCurrentPositionX());
-//		yController.getValueProperty().bind(gcodeService.getCurrentPositionY());
+		//Config bind
+		linkConfigSave(ConfigKey.LAST_SERVO_MIN, servoController.getMin());
+		linkConfigSave(ConfigKey.LAST_SERVO_MAX, servoController.getMax());
+		linkConfigSave(ConfigKey.LAST_X_MIN, xController.getMin());
+		linkConfigSave(ConfigKey.LAST_X_MAX, xController.getMax());
+		linkConfigSave(ConfigKey.LAST_Y_MIN, yController.getMin());
+		linkConfigSave(ConfigKey.LAST_Y_MAX, yController.getMax());
+		
+		//realtime binding
+		servoController.getValueProperty().bind(gcodeService.getCurrentPositionServo());
+		xController.getValueProperty().bind(gcodeService.getCurrentPositionX());
+		yController.getValueProperty().bind(gcodeService.getCurrentPositionY());
+	}
+	
+	private void linkConfigSave(ConfigKey key, DoubleProperty property){
+		property.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			config.setProperty(key, newValue);
+		});
 	}
 
 	@FXML

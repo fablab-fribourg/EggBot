@@ -52,6 +52,16 @@ public class Config implements Constants {
 		return Integer.parseInt(key.getDef());
 	}
 	
+	public double getDoubleProperty(ConfigKey key) {
+		String v = getProperty(key);
+		try {
+			return Double.parseDouble(v);
+		} catch (NumberFormatException ex) {
+			log.error("Cannot parse config key " + key.getName() + " with value " + v + " to double", ex);
+		}
+		return Double.parseDouble(key.getDef());
+	}
+	
 	public void setProperty(ConfigKey key, Object value) {
 		if (value == null) {
 			prop.remove(key.getName());

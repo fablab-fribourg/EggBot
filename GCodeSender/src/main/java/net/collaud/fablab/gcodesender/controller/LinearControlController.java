@@ -71,6 +71,10 @@ public class LinearControlController implements Initializable {
 
 		slider.minProperty().bind(min);
 		slider.maxProperty().bind(max);
+		
+		if(slider.getValue()<sliderMin){
+			slider.setValue(sliderMin);
+		}
 
 		CustomField.numberField(min, textMin);
 		CustomField.numberField(max, textMax);

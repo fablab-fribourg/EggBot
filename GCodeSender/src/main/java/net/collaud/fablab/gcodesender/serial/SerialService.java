@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class SerialService implements Constants {
-	
+
 	@Autowired
 	private Config config;
 
@@ -56,8 +56,14 @@ public class SerialService implements Constants {
 		new PortOpenenr(def.getName()).start();
 	}
 
-	synchronized public void write(String line) throws SerialPortException {
-		openPort.writeString(line + "\n");
+	synchronized public boolean write(String line) throws SerialPortException {
+		if (openPort != null) {
+			openPort.writeString(line + "\n");
+			return true;
+		} else {
+			log.warn("Cannot send command '{}' because port is not open yet", line);
+		}
+		return false;
 	}
 
 	public void closePort() {
