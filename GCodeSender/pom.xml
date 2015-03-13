@@ -4,7 +4,7 @@
 
 	<groupId>net.collaud.fablab</groupId>
 	<artifactId>GCodeSender</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.1</version>
 	<packaging>jar</packaging>
 
 	<name>GCodeSender</name>
@@ -12,6 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mainClass>net.collaud.fablab.gcodesender.MainApp</mainClass>
+		<github.global.server>github</github.global.server>
 	</properties>
 
 	<organization>
@@ -150,16 +151,66 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.1</version>
+				<version>2.4.2</version>
+				<configuration>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	
 	<scm>
+		<connection>scm:git:https://github.com/fablab-fribourg/EggBot.git</connection>
+		<developerConnection>scm:git:git@github.com:fablab-fribourg/EggBot.git</developerConnection>
+		<url>https://github.com/fablab-fribourg/EggBot.git</url>
+		<tag>GCodeSender-0.1</tag>
+	</scm>
+	
+	<distributionManagement>
+		<repository>
+			<id>bintray</id>
+			<url>https://bintray.com/gaetancollaud/Eggbot/package</url>
+		</repository>
+	</distributionManagement>
+	
+	<!--	<scm>
 		<connection>scm:git:git@github.com:fablab-fribourg/EggBot.git</connection>
 		<url>scm:git:git@github.com:fablab-fribourg/EggBot.git</url>
 		<developerConnection>scm:git:git@github.com:fablab-fribourg/EggBot.git</developerConnection>
 		<tag>GCodeSender-0.1</tag>
-	</scm>
+	</scm>-->
+	
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
