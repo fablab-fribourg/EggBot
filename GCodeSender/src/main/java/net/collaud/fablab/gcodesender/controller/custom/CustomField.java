@@ -6,7 +6,7 @@ import javafx.scene.control.TextField;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 public class CustomField {
 

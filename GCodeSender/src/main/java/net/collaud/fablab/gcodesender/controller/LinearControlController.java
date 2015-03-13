@@ -23,7 +23,7 @@ import org.springframework.stereotype.Controller;
 /**
  * FXML Controller class
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Controller
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)

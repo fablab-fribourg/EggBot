@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Data
 @AllArgsConstructor

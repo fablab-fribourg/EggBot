@@ -5,7 +5,7 @@ import lombok.Data;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Data
 @AllArgsConstructor

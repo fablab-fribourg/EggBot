@@ -2,7 +2,7 @@ package net.collaud.fablab.gcodesender.gcode;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 public enum Motor {
 

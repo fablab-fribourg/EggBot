@@ -11,7 +11,7 @@ import net.collaud.fablab.gcodesender.util.GcodeValueParser;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Getter
 @Setter(AccessLevel.PROTECTED)

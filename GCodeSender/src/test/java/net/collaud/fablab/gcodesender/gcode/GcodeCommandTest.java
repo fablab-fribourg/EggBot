@@ -3,13 +3,15 @@ package net.collaud.fablab.gcodesender.gcode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import static org.assertj.core.api.Assertions.*;
+
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 public class GcodeCommandTest {
 
@@ -65,11 +67,12 @@ public class GcodeCommandTest {
 				.collect(Collectors.toList());
 
 	}
-	
+
 	@Test
-	public void testParser(){
+	public void testParser() {
 		lines.forEach(l -> {
-			assertThat(GcodeCommand.parse(l).toString().trim()).isEqualTo(l.trim());
+			Optional<GcodeCommand> cmd = GcodeCommand.parse(l);
+			cmd.ifPresent(c -> assertThat(c.toString().trim()).isEqualTo(l.trim()));
 		});
 	}
 

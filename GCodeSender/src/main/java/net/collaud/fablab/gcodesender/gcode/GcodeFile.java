@@ -8,7 +8,7 @@ import lombok.Setter;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Setter
 @Getter

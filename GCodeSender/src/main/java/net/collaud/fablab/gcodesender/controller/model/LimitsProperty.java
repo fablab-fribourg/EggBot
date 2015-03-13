@@ -9,7 +9,7 @@ import net.collaud.fablab.gcodesender.util.FXUtils;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Getter
 @AllArgsConstructor

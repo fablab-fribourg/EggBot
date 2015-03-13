@@ -170,7 +170,7 @@
 	<distributionManagement>
 		<repository>
 			<id>bintray</id>
-			<url>https://bintray.com/gaetancollaud/Eggbot/package</url>
+			<url>https://bintray.com/gaetancollaud/Eggbot/GcodeSender</url>
 		</repository>
 	</distributionManagement>
 	

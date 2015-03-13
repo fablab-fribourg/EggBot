@@ -4,7 +4,7 @@ import lombok.Getter;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 public enum PortStatus {
 

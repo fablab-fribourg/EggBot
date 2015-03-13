@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  * @param <T>
  */
 public class Observable<T> {

@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @UtilityClass
 public class GcodeValueParser {

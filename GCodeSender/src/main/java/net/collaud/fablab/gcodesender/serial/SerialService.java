@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 
 /**
  *
- * @author Gaetan Collaud <gaetancollaud@gmail.com>
+ * @author Gaetan Collaud
  */
 @Service
 @Slf4j
