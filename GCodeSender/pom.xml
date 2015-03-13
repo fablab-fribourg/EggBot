@@ -4,7 +4,7 @@
 
 	<groupId>net.collaud.fablab</groupId>
 	<artifactId>GCodeSender</artifactId>
-	<version>0.1</version>
+	<version>0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>GCodeSender</name>
@@ -164,13 +164,13 @@
 		<connection>scm:git:https://github.com/fablab-fribourg/EggBot.git</connection>
 		<developerConnection>scm:git:git@github.com:fablab-fribourg/EggBot.git</developerConnection>
 		<url>https://github.com/fablab-fribourg/EggBot.git</url>
-		<tag>GCodeSender-0.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 	
 	<distributionManagement>
 		<repository>
 			<id>bintray</id>
-			<url>https://bintray.com/gaetancollaud/Eggbot/GcodeSender</url>
+			<url>https://bintray.com/gaetancollaud/Eggbot/package</url>
 		</repository>
 	</distributionManagement>
 	

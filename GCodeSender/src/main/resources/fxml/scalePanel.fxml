@@ -12,6 +12,8 @@
 			<children>
 				<Label text="Scale" />
 				<TextField fx:id="textScale" prefWidth="50.0" text="1.0" />
+            <Button mnemonicParsing="false" onAction="#autoScale" text="Auto scale" />
+            <Button mnemonicParsing="false" onAction="#resetScale" text="Reset scale" />
 			</children>
 		</HBox>
 		<GridPane alignment="CENTER" layoutX="118.0" layoutY="104.0" styleClass="scaleGrid">

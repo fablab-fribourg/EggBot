@@ -1,17 +1,19 @@
 package net.collaud.fablab.gcodesender.controller;
 
 import java.net.URL;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
@@ -72,11 +74,20 @@ public class ScalePanelController implements Initializable {
 
 	@FXML
 	private TextField textScale;
+	
+	@FXML
+	private Button buttonAutoScale;
 
 	@Getter
 	private final DoubleProperty scaleValue = new SimpleDoubleProperty(0);
+	
+	private LimitsProperty limitsUser;
+	private LimitsProperty limitsFile;
 
 	public void init(final LimitsProperty user, final LimitsProperty file) {
+		limitsUser = user;
+		limitsFile = file;
+		
 		linkLabelToDoubleProperty(xMinUser, user.getXMin());
 		linkLabelToDoubleProperty(xMaxUser, user.getXMax());
 		linkLabelToDoubleProperty(yMinUser, user.getYMin());
@@ -118,7 +129,30 @@ public class ScalePanelController implements Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 		CustomField.numberField(scaleValue, textScale);
 	}
-
+	
+	@FXML
+	private void resetScale(){
+		scaleValue.set(1.0);
+	}
+	
+	@FXML
+	private void autoScale(){
+		List<Map.Entry<Double, Double>> list = new ArrayList<>();
+		list.add(new AbstractMap.SimpleEntry(limitsUser.getXMin().get(), limitsFile.getXMin().get()));
+		list.add(new AbstractMap.SimpleEntry(limitsUser.getXMax().get(), limitsFile.getXMax().get()));
+		list.add(new AbstractMap.SimpleEntry(limitsUser.getYMin().get(), limitsFile.getYMin().get()));
+		list.add(new AbstractMap.SimpleEntry(limitsUser.getYMax().get(), limitsFile.getYMax().get()));
+		
+		double min = Double.MAX_VALUE;
+		for(Map.Entry<Double, Double> entry : list){
+			double s = entry.getKey()/entry.getValue();
+			if(s<min){
+				min = s;
+			}
+		}
+		scaleValue.set(min);
+	}
+	
 	private void linkLabelToDoubleProperty(Label label, DoubleProperty prop) {
 		prop.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			setLabelDouble(label, newValue.doubleValue());
