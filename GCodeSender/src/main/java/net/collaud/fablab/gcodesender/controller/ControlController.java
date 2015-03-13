@@ -66,17 +66,17 @@ public class ControlController implements Initializable {
 		xController.init("X", config.getDoubleProperty(ConfigKey.LAST_X_MIN), config.getDoubleProperty(ConfigKey.LAST_X_MAX));
 		yController.init("Y", config.getDoubleProperty(ConfigKey.LAST_Y_MIN), config.getDoubleProperty(ConfigKey.LAST_Y_MAX));
 
-		servoController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+		servoController.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.PEN, newValue.doubleValue());
 			semNewValue.release();
 		});
 
-		xController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+		xController.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.X, newValue.doubleValue());
 			semNewValue.release();
 		});
 
-		yController.getValueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+		yController.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.Y, newValue.doubleValue());
 			semNewValue.release();
 		});
@@ -92,9 +92,15 @@ public class ControlController implements Initializable {
 		linkConfigSave(ConfigKey.LAST_Y_MAX, yController.getMax());
 		
 		//realtime binding
-		servoController.getValueProperty().bind(gcodeService.getCurrentPositionServo());
-		xController.getValueProperty().bind(gcodeService.getCurrentPositionX());
-		yController.getValueProperty().bind(gcodeService.getCurrentPositionY());
+		gcodeService.getCurrentPositionServo().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			servoController.setValue(newValue.doubleValue());
+		});
+		gcodeService.getCurrentPositionX().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			xController.setValue(newValue.doubleValue());
+		});
+		gcodeService.getCurrentPositionY().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			yController.setValue(newValue.doubleValue());
+		});
 	}
 	
 	private void linkConfigSave(ConfigKey key, DoubleProperty property){

@@ -263,7 +263,7 @@ public class MainController implements Initializable {
 			}
 		});
 		selectedFile.addListener((ObservableValue<? extends File> observable, File oldValue, File newValue) -> {
-			labelFile.setText(Optional.ofNullable(newValue).map(f -> f.getName()).orElse("No file selected yet !"));
+			labelFile.setText(Optional.ofNullable(newValue).map(f -> f.getName()).orElse(""));
 			config.setProperty(ConfigKey.LAST_FILE, newValue != null ? newValue.getAbsolutePath() : null);
 			if (newValue != null) {
 				lastDirectory = newValue.getParentFile();

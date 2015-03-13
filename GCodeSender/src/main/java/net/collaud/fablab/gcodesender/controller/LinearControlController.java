@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -58,9 +59,6 @@ public class LinearControlController implements Initializable {
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
-		slider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-			labelCurrent.setText(GcodeValueParser.format(newValue.doubleValue()));
-		});
 	}
 
 	public void init(String title, double sliderMin, double sliderMax) {
@@ -89,9 +87,19 @@ public class LinearControlController implements Initializable {
 	private void setCurrentToMax() {
 		max.set(slider.getValue());
 	}
-
-	public DoubleProperty getValueProperty() {
-		return slider.valueProperty();
+	
+	public void setValue(double v){
+		labelCurrent.setText(GcodeValueParser.format(v));
+		if(v<min.get()){
+			v = min.get();
+		}
+		if(v>max.get()){
+			v = max.get();
+		}
+		slider.setValue(v);
+	}
+	public void addListener(ChangeListener<Number> list){
+		slider.valueProperty().addListener(list);
 	}
 
 }
