@@ -172,13 +172,13 @@
 		<url>https://github.com/fablab-fribourg/EggBot.git</url>
 		<tag>HEAD</tag>
 	</scm>
-	
+<!--	
 	<distributionManagement>
 		<repository>
 			<id>bintray</id>
 			<url>https://bintray.com/gaetancollaud/Eggbot/package</url>
 		</repository>
-	</distributionManagement>
+	</distributionManagement>-->
 	
 	<!--	<scm>
 		<connection>scm:git:git@github.com:fablab-fribourg/EggBot.git</connection>
