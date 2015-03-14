@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.controller.model.LimitsProperty;
 import net.collaud.fablab.gcodesender.util.FXUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class GcodeFileService {
+	
 
 	@Getter
 	private final ObjectProperty<GcodeFileStatus> fileStatus;
@@ -98,7 +100,6 @@ public class GcodeFileService {
 				String line;
 				while ((line = br.readLine()) != null) {
 					GcodeCommand.parse(line).ifPresent(cmd -> {
-						cmd = GcodeConverter.inkscapeZToServo(cmd);
 						commands.add(cmd);
 					});
 				}

@@ -26,6 +26,9 @@ import org.springframework.stereotype.Service;
 public class GcodeService extends Observable<GcodeNotifyMessage> implements Constants {
 
 	@Autowired
+	private GcodeConverterService gcodeConverterService;
+
+	@Autowired
 	private SerialService serialService;
 
 	@Autowired
@@ -33,7 +36,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	@Autowired
 	private Config config;
-	
+
 	private final GcodeSenderThread senderThread;
 
 	@Getter
@@ -52,7 +55,11 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 	public void print(double scale) {
 		fileService.getGcodeFile().get().getCommands()
-				.forEach(c -> senderThread.addCommand(c.scale(scale)));
+				.forEach(c -> {
+					c = gcodeConverterService.inkscapeZToServo(c);
+					c = c.scale(scale);
+					senderThread.addCommand(c);
+				});
 	}
 
 	protected void notifyInfo(String msg) {
@@ -117,16 +124,16 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 
 		private final BlockingQueue<GcodeCommand> queue = new LinkedBlockingQueue<>();
 		private boolean running = true;
-		
-		synchronized public void cancelAllPendingCommands(){
+
+		synchronized public void cancelAllPendingCommands() {
 			queue.clear();
 		}
-		
-		synchronized public void addCommand(GcodeCommand cmd){
+
+		synchronized public void addCommand(GcodeCommand cmd) {
 			queue.add(cmd);
 		}
-		
-		synchronized public void addCommands(Collection<GcodeCommand> cmds){
+
+		synchronized public void addCommands(Collection<GcodeCommand> cmds) {
 			queue.addAll(cmds);
 		}
 

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.config.Config;
 import net.collaud.fablab.gcodesender.config.ConfigKey;
 import net.collaud.fablab.gcodesender.controller.model.LimitsProperty;
+import net.collaud.fablab.gcodesender.gcode.GcodeConverterService;
 import net.collaud.fablab.gcodesender.gcode.GcodeService;
 import net.collaud.fablab.gcodesender.gcode.Motor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,10 @@ public class ControlController implements Initializable {
 
 	@Autowired
 	private GcodeService gcodeService;
-	
+
+	@Autowired
+	private GcodeConverterService gcodeConverterService;
+
 	@Autowired
 	private Config config;
 
@@ -54,17 +58,17 @@ public class ControlController implements Initializable {
 	private final Map<Motor, Double> changedValue = new ConcurrentHashMap<>();
 
 	private ChangeThread changeThread;
-	
+
 	private LimitsProperty limits;
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 		changeThread = new ChangeThread();
 		changeThread.start();
-		
-		servoController.init("Servo", config.getDoubleProperty(ConfigKey.LAST_SERVO_MIN), config.getDoubleProperty(ConfigKey.LAST_SERVO_MAX));
-		xController.init("X", config.getDoubleProperty(ConfigKey.LAST_X_MIN), config.getDoubleProperty(ConfigKey.LAST_X_MAX));
-		yController.init("Y", config.getDoubleProperty(ConfigKey.LAST_Y_MIN), config.getDoubleProperty(ConfigKey.LAST_Y_MAX));
+
+		servoController.init("Servo", config.getDoubleProperty(ConfigKey.LAST_SERVO_MIN), config.getDoubleProperty(ConfigKey.LAST_SERVO_MAX), 0, 90);
+		xController.init("X", config.getDoubleProperty(ConfigKey.LAST_X_MIN), config.getDoubleProperty(ConfigKey.LAST_X_MAX), -40, 40);
+		yController.init("Y", config.getDoubleProperty(ConfigKey.LAST_Y_MIN), config.getDoubleProperty(ConfigKey.LAST_Y_MAX), -100, 100);
 
 		servoController.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			changedValue.put(Motor.PEN, newValue.doubleValue());
@@ -80,7 +84,16 @@ public class ControlController implements Initializable {
 			changedValue.put(Motor.Y, newValue.doubleValue());
 			semNewValue.release();
 		});
-		
+
+		servoController.getMin().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			gcodeConverterService.setServoMin(newValue.doubleValue());
+		});
+		servoController.getMax().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+			gcodeConverterService.setServoMax(newValue.doubleValue());
+		});
+		gcodeConverterService.setServoMin(servoController.getMin().get());
+		gcodeConverterService.setServoMax(servoController.getMax().get());
+
 		limits = new LimitsProperty(xController.getMin(), xController.getMax(), yController.getMin(), yController.getMax());
 
 		//Config bind
@@ -90,7 +103,7 @@ public class ControlController implements Initializable {
 		linkConfigSave(ConfigKey.LAST_X_MAX, xController.getMax());
 		linkConfigSave(ConfigKey.LAST_Y_MIN, yController.getMin());
 		linkConfigSave(ConfigKey.LAST_Y_MAX, yController.getMax());
-		
+
 		//realtime binding
 		gcodeService.getCurrentPositionServo().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			servoController.setValue(newValue.doubleValue());
@@ -102,8 +115,8 @@ public class ControlController implements Initializable {
 			yController.setValue(newValue.doubleValue());
 		});
 	}
-	
-	private void linkConfigSave(ConfigKey key, DoubleProperty property){
+
+	private void linkConfigSave(ConfigKey key, DoubleProperty property) {
 		property.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 			config.setProperty(key, newValue);
 		});
@@ -144,8 +157,8 @@ public class ControlController implements Initializable {
 			}
 		}
 	}
-	
-	public LimitsProperty getLimits(){
+
+	public LimitsProperty getLimits() {
 		return limits;
 	}
 

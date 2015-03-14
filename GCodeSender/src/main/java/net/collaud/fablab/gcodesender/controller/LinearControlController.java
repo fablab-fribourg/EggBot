@@ -53,15 +53,21 @@ public class LinearControlController implements Initializable {
 
 	@Getter
 	private final DoubleProperty min = new SimpleDoubleProperty();
-	
+
 	@Getter
 	private final DoubleProperty max = new SimpleDoubleProperty();
+	
+	private double sliderMinDefault;
+	private double sliderMaxDefault;
 
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 	}
 
-	public void init(String title, double sliderMin, double sliderMax) {
+	public void init(String title, double sliderMin, double sliderMax, double sliderMinDefault, double sliderMaxDefault) {
+		this.sliderMinDefault = sliderMinDefault;
+		this.sliderMaxDefault = sliderMaxDefault;
+		
 		min.set(sliderMin);
 		max.set(sliderMax);
 
@@ -69,8 +75,8 @@ public class LinearControlController implements Initializable {
 
 		slider.minProperty().bind(min);
 		slider.maxProperty().bind(max);
-		
-		if(slider.getValue()<sliderMin){
+
+		if (slider.getValue() < sliderMin) {
 			slider.setValue(sliderMin);
 		}
 
@@ -87,18 +93,29 @@ public class LinearControlController implements Initializable {
 	private void setCurrentToMax() {
 		max.set(slider.getValue());
 	}
-	
-	public void setValue(double v){
-		labelCurrent.setText(GcodeValueParser.format(v));
-		if(v<min.get()){
-			v = min.get();
-		}
-		if(v>max.get()){
-			v = max.get();
-		}
-		slider.setValue(v);
+
+	@FXML
+	private void resetMin() {
+		min.set(sliderMinDefault);
 	}
-	public void addListener(ChangeListener<Number> list){
+
+	@FXML
+	private void resetMax() {
+		max.set(sliderMaxDefault);
+	}
+
+	public void setValue(double v) {
+		labelCurrent.setText(GcodeValueParser.format(v));
+//		if(v<min.get()){
+//			v = min.get();
+//		}
+//		if(v>max.get()){
+//			v = max.get();
+//		}
+//		slider.setValue(v);
+	}
+
+	public void addListener(ChangeListener<Number> list) {
 		slider.valueProperty().addListener(list);
 	}
 
