@@ -10,11 +10,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane minHeight="600.0" minWidth="800.0" prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.MainController">
+<BorderPane minHeight="700.0" minWidth="800.0" prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.MainController">
 	<top>
-		<HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+		<HBox prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
 			<children>
-				<TitledPane fx:id="panePort" animated="false" collapsible="false" prefHeight="200.0" prefWidth="200.0" text="Port">
+				<TitledPane fx:id="panePort" animated="false" collapsible="false" prefHeight="150.0" prefWidth="200.0" text="Port">
 					<content>
 						<VBox spacing="5.0">
 							<children>
@@ -49,7 +49,7 @@
 						</VBox>
 					</content>
 				</TitledPane>
-				<TitledPane fx:id="panePrint" animated="false" collapsible="false" prefHeight="200.0" prefWidth="150.0" text="Print">
+				<TitledPane fx:id="panePrint" animated="false" collapsible="false" prefHeight="150.0" prefWidth="200.0" text="Print">
 					<content>
 						<VBox spacing="5.0">
 							<children>
@@ -63,7 +63,7 @@
 					<children>
 						<ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS">
 							<image>
-								<Image url="@images/fablab-logo.jpg" />
+								<Image url="@../images/fablab-logo.jpg" />
 							</image>
 						</ImageView>
 					</children>
