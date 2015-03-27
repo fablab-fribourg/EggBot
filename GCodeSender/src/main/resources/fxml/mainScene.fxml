@@ -76,8 +76,8 @@
 			<children>
 				<fx:include fx:id="controlPane" source="controlPanel.fxml" />
 				<fx:include fx:id="scalePane" source="scalePanel.fxml" />
-				<fx:include fx:id="manualGCodePane" source="manualGCode.fxml" />
 				<WebView fx:id="htmlLog" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+				<fx:include fx:id="manualGCodePane" source="manualGCode.fxml" />
 			</children>
 		</VBox>
 	</center>

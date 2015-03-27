@@ -283,8 +283,8 @@ public class MainController implements Initializable {
 			sb.append("<div style=\"color:");
 			sb.append(msg.getType() == GcodeNotifyMessage.Type.ERROR ? "red" : "black");
 			sb.append(";\">");
-			sb.append(msg.getType().toString());
-			sb.append(" ");
+//			sb.append(msg.getType().toString());
+//			sb.append(" ");
 			sb.append(msg.getMessage());
 			sb.append("</div>");
 			logLines.add(sb.toString());
