@@ -12,7 +12,6 @@ import lombok.Data;
 public class GcodeNotifyMessage {
 
 	public enum Type {
-
 		INFO,
 		ERROR
 	};

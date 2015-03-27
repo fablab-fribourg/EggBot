@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.collaud.fablab.gcodesender.controller.ManualGCodeController">
+   <children>
+      <Button mnemonicParsing="false" onAction="#clear" text="R" />
+      <TextField fx:id="textGcode" onAction="#send" HBox.hgrow="ALWAYS" />
+      <Button fx:id="buttonSend" mnemonicParsing="false" onAction="#send" text="Send" />
+   </children>
+</HBox>

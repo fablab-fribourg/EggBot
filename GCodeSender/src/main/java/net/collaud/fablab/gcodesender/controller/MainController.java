@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -27,6 +25,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
@@ -112,6 +111,9 @@ public class MainController implements Initializable {
 
 	@FXML
 	private TitledPane controlPane;
+	
+	@FXML
+	private HBox manualGCodePane;
 	
 	
 	@FXML
@@ -302,6 +304,9 @@ public class MainController implements Initializable {
 		
 		//Pane scale
 		scalePaneController.init(controlPaneController.getLimits(), gcodeFileService.getLimits());
+		
+		//Pane manual gcode
+		manualGCodePane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
 
 		//Init values
 		reloadPorts();
@@ -313,7 +318,7 @@ public class MainController implements Initializable {
 
 	}
 
-	private void updateLog() {
+	private synchronized void updateLog() {
 		StringBuilder html = new StringBuilder().append("<html>");
 		html.append("<head>");
 		html.append("   <script language=\"javascript\" type=\"text/javascript\">");

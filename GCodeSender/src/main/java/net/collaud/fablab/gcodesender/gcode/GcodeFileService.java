@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class GcodeFileService {
-	
 
 	@Getter
 	private final ObjectProperty<GcodeFileStatus> fileStatus;
@@ -32,7 +31,7 @@ public class GcodeFileService {
 	private final ObjectProperty<GcodeFile> gcodeFile;
 
 	private GcodeFileAnalyserThread thread;
-	
+
 	private final LimitsProperty limits = new LimitsProperty();
 
 	public GcodeFileService() {
@@ -44,36 +43,38 @@ public class GcodeFileService {
 		if (thread != null) {
 			thread.interrupt();
 		}
-		thread = new GcodeFileAnalyserThread(file);
-		thread.start();
+		if (file != null) {
+			thread = new GcodeFileAnalyserThread(file);
+			thread.start();
+		}
 	}
-	
-	public LimitsProperty getLimits(){
+
+	public LimitsProperty getLimits() {
 		return limits;
 	}
-	
-	private void searchLimits(List<GcodeCommand> list){
+
+	private void searchLimits(List<GcodeCommand> list) {
 		limits.resetAllInFxThread();
 		double xMin = Double.MAX_VALUE;
 		double xMax = Double.MIN_VALUE;
 		double yMin = Double.MAX_VALUE;
 		double yMax = Double.MIN_VALUE;
-		for(GcodeCommand c : list){
-			if(c.getX().isPresent()){
+		for (GcodeCommand c : list) {
+			if (c.getX().isPresent()) {
 				double x = c.getX().get();
-				if(x<xMin){
+				if (x < xMin) {
 					xMin = x;
 				}
-				if(x>xMax){
+				if (x > xMax) {
 					xMax = x;
 				}
 			}
-			if(c.getY().isPresent()){
+			if (c.getY().isPresent()) {
 				double y = c.getY().get();
-				if(y<yMin){
+				if (y < yMin) {
 					yMin = y;
 				}
-				if(y>yMax){
+				if (y > yMax) {
 					yMax = y;
 				}
 			}
@@ -104,9 +105,9 @@ public class GcodeFileService {
 					});
 				}
 				gf.setCommands(commands);
-				
+
 				searchLimits(commands);
-				
+
 				gcodeFile.set(gf);
 				//done
 				FXUtils.setInFXThread(fileStatus, GcodeFileStatus.COMPLETE);
@@ -119,6 +120,5 @@ public class GcodeFileService {
 			}
 		}
 	}
-	
-	
+
 }

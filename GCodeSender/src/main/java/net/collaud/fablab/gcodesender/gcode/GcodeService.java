@@ -1,15 +1,18 @@
 package net.collaud.fablab.gcodesender.gcode;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javax.annotation.PostConstruct;
 import jssc.SerialPortException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.collaud.fablab.gcodesender.Constants;
 import net.collaud.fablab.gcodesender.config.Config;
+import net.collaud.fablab.gcodesender.config.ConfigKey;
 import net.collaud.fablab.gcodesender.serial.SerialService;
 import net.collaud.fablab.gcodesender.tools.Observable;
 import net.collaud.fablab.gcodesender.util.FXUtils;
@@ -48,18 +51,33 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 	@Getter
 	private final DoubleProperty currentPositionServo = new SimpleDoubleProperty(0);
 
+	private int mCommandWait;
+	private boolean wasPrinting = false;
+
 	public GcodeService() {
 		senderThread = new GcodeSenderThread();
 		senderThread.start();
+		mCommandWait = 0;
 	}
 
 	public void print(double scale) {
+		wasPrinting = true;
+		mCommandWait = config.getIntProperty(ConfigKey.M_COMMAND_WAIT);
 		fileService.getGcodeFile().get().getCommands()
 				.forEach(c -> {
 					c = gcodeConverterService.inkscapeZToServo(c);
 					c = c.scale(scale);
 					senderThread.addCommand(c);
 				});
+	}
+
+	synchronized public void sendGCodeLine(String line) {
+		Optional<GcodeCommand> cmd = GcodeCommand.parse(line);
+		if (cmd.isPresent()) {
+			senderThread.addCommand(cmd.get());
+		} else {
+			notifyError("Cannot parse gcode : " + line);
+		}
 	}
 
 	protected void notifyInfo(String msg) {
@@ -125,6 +143,10 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 		private final BlockingQueue<GcodeCommand> queue = new LinkedBlockingQueue<>();
 		private boolean running = true;
 
+		public GcodeSenderThread() {
+			super("GcodeSender");
+		}
+
 		synchronized public void cancelAllPendingCommands() {
 			queue.clear();
 		}
@@ -137,11 +159,27 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 			queue.addAll(cmds);
 		}
 
+		@Override
 		public void run() {
 			while (running) {
 				try {
+					if (queue.isEmpty() && wasPrinting) {
+						GcodeNotifyMessage msg = new GcodeNotifyMessage(GcodeNotifyMessage.Type.INFO, "End of pring");
+						msg.setEndOfPrint(true);
+						wasPrinting = false;
+						mCommandWait = 0;
+						notifyObservers(msg);
+					}
+
 					final GcodeCommand next = queue.take();
 					writeLineAndWaitOk(next);
+					if (next.getType() == GcodeCommand.Type.M && next.getCode() == 300) {
+						//pen cmd
+						try {
+							Thread.sleep(mCommandWait);
+						} catch (InterruptedException ex) {
+						}
+					}
 				} catch (InterruptedException ex) {
 					log.error("Gcode Sender Thread interupted", ex);
 					running = false;
@@ -158,10 +196,7 @@ public class GcodeService extends Observable<GcodeNotifyMessage> implements Cons
 					do {
 						rep = serialService.getReadingQueue().take();
 						if (rep != null) {
-							if (rep.equals("stop")) {
-								notifyInfo("Stopping printing");
-								return false;
-							} else if (!rep.startsWith("ok")) {
+							if (!rep.startsWith("ok")) {
 								notifyError("Wrong message received : " + rep);
 							}
 						}
