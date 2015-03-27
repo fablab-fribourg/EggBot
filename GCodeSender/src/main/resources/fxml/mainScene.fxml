@@ -88,7 +88,7 @@
 				<Label text="coded by" /> 
 				<Hyperlink onAction="#linkGaetan" text="Gaetan Collaud" />
 				<Label text="for" /> 
-				<Hyperlink onAction="#linkFablab" text="Fablab-Fribourg, CH" />
+				<Hyperlink onAction="#linkFablab" text="Fablab-Fribourg" />
 			</children>
 		</HBox>
 	</bottom>
