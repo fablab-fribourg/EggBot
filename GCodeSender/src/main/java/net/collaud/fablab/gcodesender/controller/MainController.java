@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -111,14 +112,13 @@ public class MainController implements Initializable {
 
 	@FXML
 	private TitledPane controlPane;
-	
+
 	@FXML
 	private HBox manualGCodePane;
-	
-	
+
 	@FXML
 	private ControlController controlPaneController;
-	
+
 	@FXML
 	private ScalePanelController scalePaneController;
 
@@ -169,8 +169,9 @@ public class MainController implements Initializable {
 	}
 
 	private void addGCodeExtensionFilter(FileChooser fileChooser) {
-		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Gcode file ", "*.gcode");
-		fileChooser.getExtensionFilters().add(extFilter);
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Gcode file", 
+				Arrays.asList(new String[]{"*.gcode", "*.ngc", "*.nc", "*.tap"})));
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All ", "*.*"));
 	}
 
 	@FXML
@@ -301,10 +302,10 @@ public class MainController implements Initializable {
 
 		//Pane control
 		controlPane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
-		
+
 		//Pane scale
 		scalePaneController.init(controlPaneController.getLimits(), gcodeFileService.getLimits());
-		
+
 		//Pane manual gcode
 		manualGCodePane.disableProperty().bind(printing.or(portStatus.isNotEqualTo(PortStatus.OPEN)));
 
