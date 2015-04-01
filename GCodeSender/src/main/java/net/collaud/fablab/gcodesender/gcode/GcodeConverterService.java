@@ -27,8 +27,7 @@ public class GcodeConverterService {
 				&& cmd.getZ().isPresent()
 				&& !cmd.getX().isPresent()
 				&& !cmd.getY().isPresent()) {
-			
-			double z = cmd.getZ().get() * 10;
+			double z = cmd.getZ().get();
 			if(z<=0){
 				z = servoMin;
 			}else{
