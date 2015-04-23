@@ -6,6 +6,8 @@ Use the eggbot-frame-fablab-fribourg.svg if you want our upgraded version. Other
 
 ## Licence
 
+[![CC By-Sa](https://i.creativecommons.org/l/by-sa/3.0/us/88x31.png)](http://creativecommons.org/licenses/by-sa/3.0/us/)
+
 Everything in this directory is under Creative Commons Attribution-ShareAlike 3.0.
 
 Original work is from [Christoph Reinhardt](http://www.christophreinhardt.ch/)
