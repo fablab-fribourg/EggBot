@@ -3,6 +3,12 @@ All you need to make your own EggBot.
 
 This repository contains the Arduino code and a computer application to print files.
 
+## Licence
+
+ * Hardware is under Creative Commons Attribution-ShareAlike 3.0
+ * Arduino code is under GNU GPL
+ * The GcodeSender (computer application) application is under MIT Licence
+
 ## Computer application
 
 ![alt text](https://raw.githubusercontent.com/fablab-fribourg/EggBot/master/docs/images/screenshot1.png "GcodeSender")
