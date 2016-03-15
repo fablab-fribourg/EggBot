@@ -16,6 +16,18 @@ This repository contains the Arduino code and a computer application to print fi
  * 2x Nema 17 Stepper motor
  * 1x mini servo
  * 1x 12 volt power supply (min 1A)
+ * 6x Jumpers
+
+##Mechanic
+ * 8x	Nuts M4
+ * 1x	Threaded shaft M4 100mm
+ * 8x	Hex head screws M4 x20mm
+ * 20x	Nuts M3
+ * 16x	Screws M3 x 8mm
+ * 12x	Screws M3 x 16mm
+ * 8x	Washers M3
+ * 1x	Nail diam 1 or 2mm
+ * 1x	Spring ~M4
 
 ## Computer application
 
