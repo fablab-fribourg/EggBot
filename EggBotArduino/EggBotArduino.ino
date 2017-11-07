@@ -360,7 +360,20 @@ void process_commands(char command[], int command_length) // deals with standard
 						}
 						servoEnabled = false;
 					}
-					servo.write((int) value);
+					// Slow servo down
+					while (servo.read() != value){
+						if (servo.read() < value){
+							servo.write((int) servo.read()+1);
+							for (int i = 0; i < 10; i++) {
+							  SoftwareServo::refresh();
+							  delay(4);
+							}
+						}
+						else if (servo.read() > value){
+							servo.write((int) value);
+							SoftwareServo::refresh();
+						} 
+					}
 				}
 				break;
 
