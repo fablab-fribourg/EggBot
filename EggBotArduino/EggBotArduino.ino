@@ -56,7 +56,7 @@
 #define XAXIS_MAX_STEPCOUNT 300
 #define DEFAULT_ZOOM_FACTOR 1. // With a Zoom-Faktor of .65, I can print gcode for Makerbot Unicorn without changes. 
 // The zoom factor can be also manipulated by the propretiary code M402
-
+#define SERVO_REVERSE 1
 
 /* --------- */
 
@@ -362,14 +362,14 @@ void process_commands(char command[], int command_length) // deals with standard
 					}
 					// Slow servo down
 					while (servo.read() != value){
-						if (servo.read() < value){
-							servo.write((int) servo.read()+1);
+						if ((servo.read() < value) ^ SERVO_REVERSE){
+							servo.write((int) servo.read()+1-2*SERVO_REVERSE);
 							for (int i = 0; i < 10; i++) {
 							  SoftwareServo::refresh();
 							  delay(4);
 							}
 						}
-						else if (servo.read() > value){
+						else{
 							servo.write((int) value);
 							SoftwareServo::refresh();
 						} 
